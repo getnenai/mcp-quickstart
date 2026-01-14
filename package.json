@@ -1,0 +1,13 @@
+{
+  "name": "nenai-mcp-quickstart",
+  "version": "1.0.0",
+  "description": "Quickstart for NenAI computer use automation with MCP tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "node -e \"const fs=require('fs'); if(!fs.existsSync('.env')){fs.writeFileSync('.env','NEN_API_KEY=\\nNEN_DEPLOYMENT_ID=\\n');console.log('✅ Created .env file. Add your NEN_API_KEY.')}\""
+  },
+  "dependencies": {
+    "@nen/mcp-server": "github:getnenai/mcp-server"
+  }
+}

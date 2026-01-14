@@ -1,0 +1,369 @@
+# NenAI FSM Authoring Guide
+
+You are an AI assistant helping to author NenAI computer use workflows. This guide explains how to create FSM (Finite State Machine) workflows.
+
+---
+
+## Workflow Structure
+
+Each workflow consists of 2 files:
+
+```
+workflows/my_workflows/my-workflow/
+├── orchestrator.json    # Workflow definition (states, transitions)
+└── workflow.json        # Complete FSM with all states
+```
+
+**Key Principle:** Keep your entire workflow in one FSM file. Don't add orchestrator complexity unless needed for resumability.
+
+---
+
+## State Types
+
+| Type | Use Case | Key Field |
+|------|----------|-----------|
+| `LLMState` | Agent figures out how to do task (default) | `message_template` |
+| `ToolState` | Exact click/type at known coordinates | `tool_input_template` |
+| `VerificationState` | Wait for UI element to appear | `comparison_config` |
+| `CoordinateToolState` | LLM finds element, then clicks it | `type: "coordinate_tool"` |
+| `CallbackState` | Generate dynamic values (TOTP, timestamps) | `type: "callback"` |
+
+**Default to LLMState unless:**
+- You have exact coordinates → use ToolState
+- You just need to wait → use VerificationState
+
+---
+
+## LLMState (Agentic Action)
+
+Let the LLM figure out how to achieve a goal.
+
+```json
+{
+  "id": "search_for_patient",
+  "description": "Search for patient and wait for results",
+  "message_template": "Click the patient search field. Type '${PATIENT_NAME}'. Wait for results to appear.",
+  "max_iterations": 10,
+  "max_attempts": 2,
+  "span_id": "patient_search"
+}
+```
+
+**Checklist:**
+- One clear goal per state
+- Specific, imperative instructions
+- Variables hydrated with `${VAR_NAME}`
+- `max_iterations`: 5-15 typical
+
+---
+
+## ToolState (Deterministic Action)
+
+Execute a specific tool call with known parameters.
+
+```json
+{
+  "id": "click_login_button",
+  "description": "Click the login button",
+  "tool": "computer",
+  "tool_input_template": {
+    "action": "left_click",
+    "coordinate": [500, 300]
+  },
+  "max_attempts": 1
+}
+```
+
+**Available Actions:**
+- `left_click`: Click at coordinate
+- `type`: Type text (fast)
+- `precise_type`: Type character-by-character (for passwords)
+- `key`: Press key (e.g., "Return", "Tab", "Escape")
+- `screenshot`: Take screenshot
+
+---
+
+## VerificationState (Wait for Condition)
+
+Wait for a condition to be true before continuing.
+
+```json
+{
+  "id": "verify_dashboard_loaded",
+  "description": "Wait for dashboard to load",
+  "type": "verification",
+  "comparison_config": {
+    "strategy": "vlm_similarity",
+    "prompt": "Is the dashboard visible with user profile in top-right?"
+  },
+  "verification_config": {
+    "strategy": "verify_until",
+    "wait_timeout": 30,
+    "check_interval": 5
+  },
+  "max_attempts": 2
+}
+```
+
+**Comparison Strategies:**
+1. `vlm_similarity` - Visual check with prompt
+2. `bash_command` - File/system check
+
+**Verification Strategies:**
+- `verify_now` - Check once immediately
+- `verify_until` - Poll until timeout
+
+---
+
+## CoordinateToolState (LLM + Tool)
+
+Have LLM find a coordinate, then execute tool action.
+
+```json
+{
+  "id": "click_submit_button",
+  "description": "Find and click Submit button",
+  "type": "coordinate_tool",
+  "message_template": "Find the Submit button and tell me its coordinate.",
+  "tool_input_template": {
+    "action": "left_click"
+  },
+  "max_iterations": 5
+}
+```
+
+---
+
+## CallbackState (Dynamic Values)
+
+Generate dynamic values at runtime.
+
+```json
+{
+  "id": "generate_totp",
+  "description": "Generate TOTP code",
+  "type": "callback",
+  "callback_function": "generate_totp",
+  "callback_args": {
+    "secret": "${TOTP_SECRET}"
+  },
+  "store_result_as": "TOTP_CODE"
+}
+```
+
+---
+
+## Variable System
+
+**User Variables:**
+```json
+{
+  "name": "PATIENT_NAME",
+  "value": "",
+  "description": "Patient name to search for"
+}
+```
+
+**Password Variables (secrets):**
+```json
+{
+  "name": "PASSWORD",
+  "value": "",
+  "type": "password",
+  "secret_id": "deployment_password",
+  "description": "Login password"
+}
+```
+
+**Usage in templates:** `${VARIABLE_NAME}`
+
+---
+
+## Failure Recovery
+
+Handle failures gracefully:
+
+```json
+{
+  "verification_config": {
+    "strategy": "verify_until",
+    "wait_timeout": 20,
+    "failure_recovery": {
+      "id": "dismiss_popup",
+      "message_template": "Dismiss any popup dialogs by clicking X or pressing Escape.",
+      "max_iterations": 5
+    }
+  }
+}
+```
+
+---
+
+## Environment Normalization Pattern
+
+**Always start with these states:**
+
+1. Launch browser
+2. Dismiss popups
+3. Focus address bar
+4. Type URL
+5. Press Enter
+6. Verify page loaded
+
+```json
+{
+  "states": [
+    {
+      "id": "launch_browser",
+      "description": "Launch Firefox browser",
+      "message_template": "Find and click Firefox icon to launch it.",
+      "max_attempts": 2
+    },
+    {
+      "id": "dismiss_popups",
+      "message_template": "Close any popups or banners.",
+      "max_iterations": 5
+    },
+    {
+      "id": "focus_address_bar",
+      "message_template": "Click the address bar at the top of the browser.",
+      "max_iterations": 3
+    },
+    {
+      "id": "type_url",
+      "tool": "computer",
+      "tool_input_template": {
+        "action": "type",
+        "text": "https://example.com"
+      }
+    },
+    {
+      "id": "press_enter",
+      "tool": "computer",
+      "tool_input_template": {
+        "action": "key",
+        "text": "Return"
+      }
+    },
+    {
+      "id": "verify_page_loaded",
+      "type": "verification",
+      "comparison_config": {
+        "strategy": "vlm_similarity",
+        "prompt": "Is the login page visible?"
+      },
+      "verification_config": {
+        "strategy": "verify_until",
+        "wait_timeout": 30
+      }
+    }
+  ]
+}
+```
+
+---
+
+## FSM Template
+
+```json
+{
+  "metadata": {
+    "recording_mode": "tool_calls",
+    "mode": "anthropic",
+    "tool_version": "computer_use_20250124"
+  },
+  "model": "claude-sonnet-4-20250514",
+  "provider": "anthropic",
+  "tool_version": "computer_use_20250124",
+  "spans": [
+    {"id": "setup", "name": "Environment Setup"},
+    {"id": "auth", "name": "Authentication"},
+    {"id": "main", "name": "Main Workflow"},
+    {"id": "verify", "name": "Verification"}
+  ],
+  "variables": [
+    {
+      "name": "EXAMPLE_VAR",
+      "value": "",
+      "description": "Example variable"
+    }
+  ],
+  "states": [
+    // Add your states here
+  ]
+}
+```
+
+---
+
+## Orchestrator Template
+
+```json
+{
+  "name": "Workflow Name",
+  "workflow_id": "uuid-string",
+  "variables": [],
+  "states": [
+    {
+      "name": "initial_state",
+      "comparison_config": {
+        "strategy": "vlm_similarity",
+        "prompt": "Is the desktop ready?"
+      }
+    },
+    {
+      "name": "final_state",
+      "comparison_config": {
+        "strategy": "bash_command",
+        "command": "test -f /artifacts/output.pdf && echo 'found'",
+        "expected_output": "found"
+      }
+    }
+  ],
+  "initial_state": {"name": "initial_state"},
+  "desired_state": "final_state",
+  "transitions": [
+    {
+      "name": "main_workflow",
+      "from_state": {"name": "initial_state"},
+      "to_state": {"name": "final_state"},
+      "fsm_file": "./workflow.json"
+    }
+  ],
+  "max_global_retries": 2
+}
+```
+
+---
+
+## Common Pitfalls
+
+| Pitfall | Solution |
+|---------|----------|
+| Workflow exits immediately | Add VerificationState at the end to wait for completion |
+| Password typing fails | Use `precise_type` instead of `type` |
+| Variables not substituted | Define in orchestrator.json, use `${VAR}` syntax |
+| max_iterations too high | Use 5-15 for most states |
+| Vague verification prompts | Use specific yes/no questions |
+
+---
+
+## Verification Prompt Guidelines
+
+**Good prompts:**
+- "Is the Schedule page visible?"
+- "Is there exactly one patient result for '${PATIENT_NAME}'?"
+
+**Bad prompts:**
+- "Is the page loaded correctly?"
+- "Check if everything looks right"
+
+---
+
+## When to Use Each State Type
+
+1. **LLMState**: Default for most tasks. Use when UI is dynamic or task requires intelligence.
+2. **ToolState**: For fixed-position clicks and known coordinates.
+3. **VerificationState**: After critical actions, before proceeding to next step.
+4. **CoordinateToolState**: When button position is dynamic but you want precise clicking.
+5. **CallbackState**: For TOTP codes, timestamps, or computed values.

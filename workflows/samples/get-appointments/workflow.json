@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "recording_mode": "tool_calls",
+    "mode": "anthropic",
+    "tool_version": "computer_use_20250124"
+  },
+  "model": "claude-sonnet-4-20250514",
+  "provider": "anthropic",
+  "tool_version": "computer_use_20250124",
+  "spans": [
+    {"id": "setup", "name": "Environment Setup", "description": "Launch browser and navigate"},
+    {"id": "auth", "name": "Authentication", "description": "Login to the application"},
+    {"id": "extract", "name": "Data Extraction", "description": "Navigate to calendar and extract appointments"},
+    {"id": "complete", "name": "Completion", "description": "Save results and verify"}
+  ],
+  "variables": [
+    {
+      "name": "APPOINTMENT_DAY",
+      "value": "",
+      "description": "Day to retrieve appointments for"
+    },
+    {
+      "name": "PRACTICE_EMAIL",
+      "value": "",
+      "description": "Practice login email"
+    },
+    {
+      "name": "PRACTICE_PASSWORD",
+      "value": "",
+      "type": "password",
+      "secret_id": "practice_password",
+      "description": "Practice login password"
+    }
+  ],
+  "states": [
+    {
+      "id": "launch_browser",
+      "description": "Launch the browser",
+      "message_template": "Find and click the Chromium or Firefox icon to launch the browser.",
+      "max_attempts": 2,
+      "span_id": "setup"
+    },
+    {
+      "id": "dismiss_popups",
+      "description": "Dismiss any startup popups",
+      "message_template": "Close any welcome messages, popups, or dialogs.",
+      "max_iterations": 5,
+      "max_attempts": 1,
+      "span_id": "setup"
+    },
+    {
+      "id": "focus_address_bar",
+      "description": "Click address bar",
+      "message_template": "Click the address bar at the top of the browser.",
+      "max_iterations": 3,
+      "max_attempts": 1,
+      "span_id": "setup"
+    },
+    {
+      "id": "type_url",
+      "description": "Type the login URL",
+      "tool": "computer",
+      "tool_input_template": {
+        "action": "type",
+        "text": "https://app.example.com/login"
+      },
+      "max_attempts": 1,
+      "span_id": "setup"
+    },
+    {
+      "id": "press_enter",
+      "description": "Navigate to the URL",
+      "tool": "computer",
+      "tool_input_template": {
+        "action": "key",
+        "text": "Return"
+      },
+      "max_attempts": 1,
+      "span_id": "setup"
+    },
+    {
+      "id": "verify_login_page",
+      "description": "Verify login page loaded",
+      "type": "verification",
+      "comparison_config": {
+        "strategy": "vlm_similarity",
+        "prompt": "Is the login page visible with email and password fields?"
+      },
+      "verification_config": {
+        "strategy": "verify_until",
+        "wait_timeout": 30,
+        "check_interval": 5
+      },
+      "max_attempts": 2,
+      "span_id": "setup"
+    },
+    {
+      "id": "enter_email",
+      "description": "Enter login email",
+      "message_template": "Click the email field and type '${PRACTICE_EMAIL}'.",
+      "max_iterations": 5,
+      "max_attempts": 1,
+      "span_id": "auth"
+    },
+    {
+      "id": "enter_password",
+      "description": "Enter login password",
+      "message_template": "Click the password field.",
+      "max_iterations": 3,
+      "max_attempts": 1,
+      "span_id": "auth"
+    },
+    {
+      "id": "type_password",
+      "description": "Type the password",
+      "tool": "computer",
+      "tool_input_template": {
+        "action": "precise_type",
+        "text": "${PRACTICE_PASSWORD}"
+      },
+      "max_attempts": 1,
+      "span_id": "auth"
+    },
+    {
+      "id": "click_login",
+      "description": "Click the login button",
+      "message_template": "Click the Login or Sign In button.",
+      "max_iterations": 5,
+      "max_attempts": 2,
+      "span_id": "auth"
+    },
+    {
+      "id": "verify_logged_in",
+      "description": "Verify successful login",
+      "type": "verification",
+      "comparison_config": {
+        "strategy": "vlm_similarity",
+        "prompt": "Is the user logged in? Look for a dashboard or navigation menu."
+      },
+      "verification_config": {
+        "strategy": "verify_until",
+        "wait_timeout": 30,
+        "check_interval": 5
+      },
+      "max_attempts": 2,
+      "span_id": "auth"
+    },
+    {
+      "id": "navigate_to_calendar",
+      "description": "Navigate to the calendar/appointments page",
+      "message_template": "Find and click on 'Calendar', 'Appointments', or 'Schedule' in the navigation menu.",
+      "max_iterations": 10,
+      "max_attempts": 2,
+      "span_id": "extract"
+    },
+    {
+      "id": "select_date",
+      "description": "Navigate to the target date",
+      "message_template": "Navigate to the date ${APPOINTMENT_DAY}. Use the date picker or navigation arrows.",
+      "max_iterations": 10,
+      "max_attempts": 2,
+      "span_id": "extract"
+    },
+    {
+      "id": "extract_appointments",
+      "description": "Extract all appointments from the calendar",
+      "message_template": "Look at the calendar. Extract ALL booked appointments visible. For each appointment, record the start_time, end_time, and description. Return as JSON.",
+      "max_iterations": 10,
+      "output_format": {
+        "type": "json_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "date": {"type": "string"},
+            "appointments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "start_time": {"type": "string"},
+                  "end_time": {"type": "string"},
+                  "description": {"type": "string"}
+                },
+                "required": ["start_time", "end_time", "description"]
+              }
+            }
+          },
+          "required": ["date", "appointments"]
+        }
+      },
+      "span_id": "extract"
+    },
+    {
+      "id": "save_results",
+      "description": "Save extraction results to file",
+      "tool": "bash",
+      "tool_input_template": {
+        "command": "mkdir -p /artifacts && echo '{\"extracted\": true}' > /artifacts/appointments.json"
+      },
+      "max_attempts": 1,
+      "span_id": "complete"
+    },
+    {
+      "id": "verify_complete",
+      "description": "Verify extraction completed",
+      "type": "verification",
+      "comparison_config": {
+        "strategy": "bash_command",
+        "command": "test -f /artifacts/appointments.json && echo 'done'",
+        "expected_output": "done"
+      },
+      "verification_config": {"strategy": "verify_now"},
+      "max_attempts": 1,
+      "span_id": "complete"
+    }
+  ]
+}
