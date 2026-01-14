@@ -9,9 +9,7 @@
     "verify": "node scripts/verify-setup.js",
     "clean": "rm -rf workflows/my_workflows/*"
   },
-  "dependencies": {
-    "@nen/mcp-server": "github:getnenai/mcp-server"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"

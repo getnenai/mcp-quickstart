@@ -33,7 +33,10 @@ cd mcp-quickstart
 npm install
 ```
 
-This automatically creates a `.env` file for your credentials.
+This automatically:
+- Creates a `.env` file for your credentials
+- Configures the NenAI MCP server in Cursor (if `~/.cursor/mcp.json` doesn't exist)
+- Sets up the workflows directory structure
 
 ### 3. Add your API credentials
 
@@ -46,25 +49,11 @@ NEN_DEPLOYMENT_ID=your_deployment_id
 
 > **Don't have credentials?** [Request access](mailto:hello@nen.ai) to get your API key and deployment ID.
 
-### 4. Configure Cursor MCP
+### 4. Restart Cursor
 
-Add the NenAI MCP server to `~/.cursor/mcp.json`:
+Restart Cursor to load the MCP server configuration.
 
-```json
-{
-  "mcpServers": {
-    "nen": {
-      "command": "npx",
-      "args": ["@nen/mcp-server"],
-      "cwd": "/path/to/mcp-quickstart"
-    }
-  }
-}
-```
-
-> **Tip:** Replace `/path/to/mcp-quickstart` with the full path. Run `pwd` in the quickstart directory to get it.
-
-**Restart Cursor** to load the MCP server.
+> **Note:** If you already had `~/.cursor/mcp.json`, you may need to manually add the "nen" server. The setup script will tell you if this is needed.
 
 ### 5. Verify setup
 
