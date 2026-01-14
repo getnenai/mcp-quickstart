@@ -5,9 +5,29 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "node -e \"const fs=require('fs'); if(!fs.existsSync('.env')){fs.writeFileSync('.env','NEN_API_KEY=\\nNEN_DEPLOYMENT_ID=\\n');console.log('✅ Created .env file. Add your NEN_API_KEY.')}\""
+    "postinstall": "node scripts/setup.js",
+    "verify": "node scripts/verify-setup.js",
+    "clean": "rm -rf workflows/my_workflows/*"
   },
   "dependencies": {
     "@nen/mcp-server": "github:getnenai/mcp-server"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getnenai/mcp-quickstart.git"
+  },
+  "keywords": [
+    "mcp",
+    "cursor",
+    "automation",
+    "computer-use",
+    "ai",
+    "workflows"
+  ],
+  "author": "NenAI",
+  "license": "MIT"
 }
