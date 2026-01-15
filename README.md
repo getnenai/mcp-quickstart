@@ -68,6 +68,8 @@ The AI will use `create_workflow` to generate FSM files in `workflows/my_workflo
 | `list_runs` | List recent runs for a workflow |
 | `list_workflows` | List all workflows in a deployment |
 
+See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
+
 ## Troubleshooting
 
 Run diagnostics:
@@ -90,8 +92,8 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
 ## Documentation
 
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Detailed troubleshooting guide
+- [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) - Complete MCP tools reference
 - [INSTALLATION.md](INSTALLATION.md) - Alternative installation methods
-- [.agent/TOOLS_REFERENCE.md](.agent/TOOLS_REFERENCE.md) - Complete MCP tools reference
 - [.cursorrules](.cursorrules) - FSM workflow authoring guide
 - [workflows/samples/](workflows/samples/) - Example workflows
 

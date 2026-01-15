@@ -1,5 +1,9 @@
 # NenAI MCP Quick Setup
 
+Get started with NenAI MCP server in 3 minutes.
+
+---
+
 ## 1. Clone & Install
 
 ```bash
@@ -8,30 +12,70 @@ cd mcp-quickstart
 npm install
 ```
 
-## 2. Add API Key
+A `.env` file will be created automatically.
 
-Edit `.env` and add your key:
+---
+
+## 2. Add API Credentials
+
+Edit `.env` and add your credentials:
+
 ```bash
 NEN_API_KEY=your_api_key_here
+NEN_DEPLOYMENT_ID=your_deployment_uuid_here  # Optional
 ```
 
-## 3. Configure Cursor
+Get these from your NenAI customer engineer.
 
-Run this command **from inside the mcp-quickstart directory**:
+---
+
+## 3. Run Setup
 
 ```bash
-mkdir -p ~/.cursor && cat > ~/.cursor/mcp.json << EOF
-{
-  "mcpServers": {
-    "nenai": {
-      "command": "node",
-      "args": ["$PWD/node_modules/@nen/mcp-server/dist/index.js"],
-      "cwd": "$PWD"
-    }
-  }
-}
-EOF
+npm run setup
 ```
+
+This configures `~/.cursor/mcp.json` with your environment variables.
+
+---
+
+## 4. Restart Cursor
+
+**Completely quit and reopen Cursor** (⌘Q or Ctrl+Q).
+
+---
+
+## 5. Verify
+
+Ask the AI agent in Cursor:
+
+> "Use list_workflows to verify the MCP server is working"
+
+✅ You should see the MCP server tools responding!
+
+---
+
+## Next Steps
+
+- Check **[README.md](README.md)** for full documentation
+- See **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** for tool details
+- Explore **[workflows/samples/](workflows/samples/)** for examples
+
+---
+
+## Troubleshooting
+
+**MCP server not found:**
+- Restart Cursor completely (⌘Q, not just reload)
+- Check `~/.cursor/mcp.json` was created by setup script
+
+**API key errors:**
+- Verify `.env` has correct format (no spaces around `=`)
+- Run `npm run setup` again after editing `.env`
+- Restart Cursor
+
+**Need help?**
+Contact your NenAI customer engineer.
 
 ## 4. Restart Cursor
 

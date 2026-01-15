@@ -8,17 +8,18 @@ Quick reference guide for all NenAI MCP server tools.
 
 | Tool | Purpose | Requires API Key |
 |------|---------|------------------|
-| `nen_create_workflow` | Generate workflow FSM files | No |
-| `nen_upload` | Deploy workflow to S3 | Yes (AWS) |
-| `nen_run` | Execute workflow | Yes |
-| `nen_status` | Check run status | Yes (AWS) |
-| `nen_logs` | Fetch execution logs | Yes (SSH) |
-| `nen_artifacts` | Download recordings/logs | Yes (SSH) |
-| `nen_list_runs` | List workflow runs | Yes (SSH) |
+| `create_workflow` | Generate workflow FSM files | No |
+| `update_workflow` | Deploy workflow to S3 | Yes |
+| `create_run` | Execute workflow | Yes |
+| `get_run_status` | Check run status | Yes (DynamoDB) |
+| `get_run_logs` | Fetch execution logs | Yes (SSH) |
+| `get_run_video` | Get video recording URL | Yes |
+| `list_runs` | List workflow runs | Yes (DynamoDB) |
+| `list_workflows` | List all workflows in deployment | Yes (DynamoDB) |
 
 ---
 
-## nen_create_workflow
+## create_workflow
 
 Generate FSM workflow files from natural language descriptions.
 
@@ -44,12 +45,12 @@ Generate FSM workflow files from natural language descriptions.
 
 ### Example Usage
 
-**Simple Example:**
+**Simple Example (via AI agent):**
 > "Create a workflow that navigates to google.com and takes a screenshot"
 
 **Detailed Example:**
 ```typescript
-nen_create_workflow({
+create_workflow({
   description: "Search for a patient in the hospital system and export their appointment history",
   inputs: [
     {
@@ -95,7 +96,7 @@ nen_create_workflow({
 
 ---
 
-## nen_upload
+## update_workflow
 
 Upload workflow files to S3 and register in DynamoDB.
 
@@ -141,7 +142,7 @@ nen_upload({
 
 ---
 
-## nen_run
+## create_run
 
 Trigger workflow execution on the NenAI platform.
 
@@ -198,7 +199,7 @@ nen_run({
 
 ---
 
-## nen_status
+## get_run_status
 
 Check the status of a running or completed workflow.
 
@@ -249,7 +250,7 @@ nen_status({
 
 ---
 
-## nen_logs
+## get_run_logs
 
 Fetch execution logs from the workflow container.
 
@@ -294,7 +295,7 @@ nen_logs({
 
 ---
 
-## nen_artifacts
+## get_run_video
 
 Download run artifacts (videos, logs, state files) from the execution environment.
 
@@ -343,7 +344,7 @@ artifacts/
 
 ---
 
-## nen_list_runs
+## list_runs
 
 List recent workflow runs.
 
@@ -393,6 +394,81 @@ nen_list_runs({
 
 ---
 
+## list_workflows
+
+List all workflows in a deployment.
+
+### Parameters
+
+```typescript
+{
+  deploymentId?: string;    // Optional: Deployment UUID (uses NEN_DEPLOYMENT_ID from env if not provided)
+  orgId?: string;           // Optional: Filter by organization UUID
+  limit?: number;           // Optional: Max workflows to return (default: 50)
+}
+```
+
+### Example Usage
+
+```typescript
+// List all workflows (uses NEN_DEPLOYMENT_ID from environment)
+list_workflows({})
+
+// Specify deployment explicitly
+list_workflows({
+  deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174"
+})
+
+// Filter by organization and limit results
+list_workflows({
+  deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174",
+  orgId: "f303bc4a-81fc-4e37-b4cc-1449b3782260",
+  limit: 20
+})
+```
+
+### Response
+
+```typescript
+{
+  success: true,
+  data: {
+    workflows: [
+      {
+        workflowId: "abc123...",
+        orgId: "org456...",
+        orgName: "acme-corp",
+        workflowName: "patient-search",
+        deploymentId: "deploy789...",
+        s3WorkflowPath: "v1234567890",
+        createdAt: "2026-01-14T10:30:00.000Z",
+        updatedAt: "2026-01-14T12:45:00.000Z",
+        publishedAt: "2026-01-14T12:45:00.000Z"
+      }
+    ],
+    count: 1
+  }
+}
+```
+
+### Common Use Cases
+
+- Discovering available workflows in your deployment
+- Finding a workflow ID to use with `create_run`
+- Checking when workflows were last updated
+- Seeing all workflows for a specific organization
+
+### Typical Workflow
+
+```
+1. list_workflows({}) → Get all available workflows
+2. Copy workflow ID from results
+3. list_runs({ workflowId: "..." }) → See recent runs
+4. create_run({ workflowId: "..." }) → Trigger new run
+```
+
+---
+
 ## Typical Workflow
 
 ### 1. Create
@@ -400,7 +476,7 @@ nen_list_runs({
 ```
 Agent: "Create a workflow that searches for patients and downloads their records"
 ↓
-Uses: nen_create_workflow
+Uses: create_workflow
 ↓
 Output: FSM files in ./workflows/my_workflows/patient-search/
 ```
@@ -420,7 +496,7 @@ Commits: Saves changes
 ```
 Agent: "Upload the patient-search workflow"
 ↓
-Uses: nen_upload
+Uses: update_workflow
 ↓
 Result: Workflow available on platform
 ```
@@ -430,7 +506,7 @@ Result: Workflow available on platform
 ```
 Agent: "Run the patient-search workflow for John Doe"
 ↓
-Uses: nen_run with input { PATIENT_NAME: "John Doe" }
+Uses: create_run with input { PATIENT_NAME: "John Doe" }
 ↓
 Response: runId and messageId
 ```
@@ -440,7 +516,7 @@ Response: runId and messageId
 ```
 Agent: "Check the status of that run"
 ↓
-Uses: nen_status with messageId
+Uses: get_run_status with messageId
 ↓
 Response: Current state and progress
 ```
@@ -450,13 +526,13 @@ Response: Current state and progress
 ```
 Agent: "Get the logs for that run"
 ↓
-Uses: nen_logs with messageId
+Uses: get_run_logs with messageId
 ↓
 Review: Identifies issue in state "search_patient"
 
-Agent: "Download the video"
+Agent: "Get the video recording"
 ↓
-Uses: nen_artifacts with messageId
+Uses: get_run_video with messageId
 ↓
 Watch: Sees wrong button was clicked
 ```
@@ -468,11 +544,11 @@ Developer: Edits FSM files to fix issue
 ↓
 Agent: "Upload the updated workflow"
 ↓
-Uses: nen_upload (overwrites previous version)
+Uses: update_workflow (overwrites previous version)
 ↓
 Agent: "Run it again"
 ↓
-Uses: nen_run with same input
+Uses: create_run with same input
 ```
 
 ---
