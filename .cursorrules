@@ -301,8 +301,10 @@ Handle failures gracefully:
 ```json
 {
   "name": "Workflow Name",
-  "workflow_id": "uuid-string",
-  "variables": [],
+  
+  "_comment_llm_config": "LLM model for all workflows (required). Must be explicitly specified.",
+  "model": "claude-sonnet-4-5-20250929",
+  
   "states": [
     {
       "name": "initial_state",
@@ -321,16 +323,33 @@ Handle failures gracefully:
     }
   ],
   "initial_state": {"name": "initial_state"},
-  "desired_state": "final_state",
-  "transitions": [
-    {
-      "name": "main_workflow",
-      "from_state": {"name": "initial_state"},
-      "to_state": {"name": "final_state"},
-      "fsm_file": "./workflow.json"
+  "max_global_retries": 2,
+  "timeout_config": {
+    "state_validation_timeout_seconds": 120,
+    "state_validation_retry_interval_seconds": 10
+  },
+  "workflows": {
+    "workflow_name": {
+      "workflow_id": "uuid-string",
+      "description": "Description of what this workflow does",
+      "variables": [
+        {
+          "name": "VARIABLE_NAME",
+          "value": "",
+          "description": "Description of the variable"
+        }
+      ],
+      "transitions": [
+        {
+          "name": "main_workflow",
+          "from_state": {"name": "initial_state"},
+          "to_state": {"name": "final_state"},
+          "fsm_file": "./workflow.json"
+        }
+      ],
+      "desired_state": "final_state"
     }
-  ],
-  "max_global_retries": 2
+  }
 }
 ```
 
