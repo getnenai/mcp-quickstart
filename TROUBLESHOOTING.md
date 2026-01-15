@@ -190,6 +190,40 @@ npm run setup
 
 ---
 
+### 7a. Tool Documented But Not Available
+
+**Symptom:** Documentation mentions a tool (e.g., `list_workflows`) but AI agent says it doesn't exist
+
+**Cause:** Package is installed from GitHub but pinned to an old commit before the tool was added
+
+**Solutions:**
+
+1. Check current version:
+   ```bash
+   npm list @nen/mcp-server
+   # Shows commit hash after the #
+   ```
+
+2. Update to latest version:
+   ```bash
+   npm update @nen/mcp-server
+   ```
+
+3. Verify tool is now present:
+   ```bash
+   grep -o '"name": "[^"]*"' node_modules/@nen/mcp-server/dist/index.js | grep -A1 tools
+   # Should list all 8 tools including list_workflows
+   ```
+
+4. Restart Cursor completely:
+   - Mac: Cmd+Q, then reopen
+   - Linux/Windows: Ctrl+Q, then reopen
+
+**Verification:**
+Ask the AI agent: "Use list_workflows to verify the tool is now available"
+
+---
+
 ### 8. Wrapper Script Has Syntax Error
 
 **Symptom:** "syntax error near unexpected token"

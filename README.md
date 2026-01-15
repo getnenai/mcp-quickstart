@@ -70,6 +70,16 @@ The AI will use `create_workflow` to generate FSM files in `workflows/my_workflo
 
 See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
 
+## Updating
+
+To get the latest tools and features:
+
+```bash
+npm update @nen/mcp-server
+```
+
+Then restart Cursor completely (`Cmd+Q` / `Ctrl+Q`).
+
 ## Troubleshooting
 
 Run diagnostics:
@@ -83,6 +93,7 @@ Common issues:
 | Problem | Solution |
 |---------|----------|
 | MCP tools not available | Restart Cursor completely (`Cmd+Q` / `Ctrl+Q`) |
+| Tool documented but missing | Update package: `npm update @nen/mcp-server` |
 | "API key not set" | Check `.env` contains valid `NEN_API_KEY` |
 | "401 Unauthorized" | Verify API key with your customer engineer |
 | "Cannot find module" | Run `npm install` |
