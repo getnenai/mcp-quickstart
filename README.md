@@ -2,7 +2,7 @@
 
 Author computer use automations using natural language in Cursor.
 
-## Quick Setup (2 minutes)
+## Quick Setup (3 minutes)
 
 ### 1. Clone and install
 
@@ -12,42 +12,45 @@ cd mcp-quickstart
 npm install
 ```
 
-### 2. Add your API key
+### 2. Add your API credentials
 
-Edit the `.env` file and add your key:
+Edit the `.env` file and add your credentials:
 
 ```bash
 NEN_API_KEY=your_api_key_here
+NEN_DEPLOYMENT_ID=your_deployment_uuid_here  # Optional
 ```
 
-> **Getting Your API Key:** Contact your NenAI customer engineer.
+> **Getting Your Credentials:** Contact your NenAI customer engineer.
 
-### 3. Configure Cursor
-
-Run this command **from inside the mcp-quickstart directory**:
+### 3. Run the setup script
 
 ```bash
-mkdir -p ~/.cursor && cat > ~/.cursor/mcp.json << EOF
-{
-  "mcpServers": {
-    "nenai": {
-      "command": "node",
-      "args": ["$PWD/node_modules/@nen/mcp-server/dist/index.js"],
-      "cwd": "$PWD"
-    }
-  }
-}
-EOF
+chmod +x setup-mcp.sh
+./setup-mcp.sh
 ```
+
+Or use npm:
+
+```bash
+npm run setup
+```
+
+This script will:
+- ✅ Read your `.env` file
+- ✅ Configure `~/.cursor/mcp.json` with environment variables
+- ✅ Set up absolute paths to the MCP server
 
 ### 4. Restart Cursor
 
-Completely quit and reopen Cursor for the MCP server to load.
+**Completely quit and reopen Cursor** (Cmd+Q or Ctrl+Q) for the MCP server to load.
 
 ### 5. Verify setup
 
 Ask the AI agent:
-> "Use nen_list_runs to verify the MCP server is working"
+> "Use list_workflows to verify the MCP server is working"
+
+You should see the MCP server responding successfully!
 
 ---
 

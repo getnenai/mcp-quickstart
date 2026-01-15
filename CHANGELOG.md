@@ -1,0 +1,59 @@
+# Changelog
+
+All notable changes to the NenAI MCP Quickstart repository.
+
+## [1.0.0] - 2026-01-14
+
+### Added
+- **Complete installation guide** (`INSTALLATION.md`)
+  - Step-by-step setup for Cursor, Windsurf, and Claude Desktop
+  - Detailed troubleshooting section
+  - Advanced configuration options
+  - Platform-specific instructions (macOS, Windows, Linux)
+
+- **MCP tools reference** (`TOOLS_REFERENCE.md`)
+  - Comprehensive documentation for all 7 MCP tools
+  - Example usage for each tool
+  - Parameters and response formats
+  - Typical workflow patterns
+  - Best practices and tips
+
+- **Enhanced README.md**
+  - Improved quick start guide
+  - Multi-IDE support instructions
+  - Expanded troubleshooting section
+  - "What's Next" section for new users
+  - Advanced usage patterns
+  - Quick links reference table
+
+### Changed
+- Updated `package.json` postinstall script
+  - Now only creates `NEN_API_KEY` field (removed `NEN_DEPLOYMENT_ID`)
+  - Enhanced console output with next steps
+
+### Documentation Structure
+```
+mcp-quickstart/
+├── README.md              # Overview and quick start
+├── INSTALLATION.md        # Detailed installation guide
+├── TOOLS_REFERENCE.md     # MCP tools documentation
+├── CHANGELOG.md           # This file
+├── .cursorrules           # FSM authoring guide
+└── workflows/
+    └── samples/           # Example workflows
+```
+
+## Future Enhancements
+
+### Planned
+- Video tutorials for common workflows
+- Interactive workflow builder UI
+- Template library for common use cases
+- Integration testing examples
+- Performance optimization guide
+
+### Under Consideration
+- VS Code extension support
+- Local development container setup
+- Workflow debugging tools
+- Community workflow marketplace
