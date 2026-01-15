@@ -1,12 +1,10 @@
 # NenAI MCP Quickstart
 
-Build computer use automations using natural language in Cursor.
+Build computer use automations using natural language in Cursor. Author, test, and run browser automation workflows directly from your IDE.
 
----
+## Quick Setup
 
-## Quick Setup (3 minutes)
-
-### 1. Clone and install
+### 1. Install
 
 ```bash
 git clone https://github.com/getnenai/mcp-quickstart.git
@@ -14,171 +12,91 @@ cd mcp-quickstart
 npm install
 ```
 
-The `postinstall` script will automatically create a `.env` file for you.
+The postinstall script creates a `.env` file from `.env.example`.
 
-### 2. Add your API credentials
+### 2. Add Credentials
 
-Edit the `.env` file and add your credentials:
+Edit `.env` with your API credentials:
 
-```bash
+```env
 NEN_API_KEY=your_api_key_here
-NEN_DEPLOYMENT_ID=your_deployment_uuid_here  # Optional
+NEN_DEPLOYMENT_ID=your_deployment_id  # Optional
 ```
 
-> **Getting Your Credentials:** Contact your NenAI customer engineer.
-
-### 3. Run the setup script
+### 3. Configure
 
 ```bash
 npm run setup
 ```
 
-This script will:
-- ✅ Read your `.env` file
-- ✅ Configure `~/.cursor/mcp.json` with environment variables
-- ✅ Set up absolute paths to the MCP server
+This configures Cursor's MCP settings and validates your setup.
 
 ### 4. Restart Cursor
 
-**Completely quit and reopen Cursor** (⌘Q or Ctrl+Q) for the MCP server to load.
+Quit Cursor completely (`Cmd+Q` / `Ctrl+Q`) and reopen it.
 
-### 5. Verify setup
+### 5. Verify
 
-Ask the AI agent in Cursor:
-> "Use list_workflows to verify the MCP server is working"
-
-You should see the MCP server tools responding successfully! ✅
-
----
-
-## What You Can Do
-
-### Create Workflows
-
-Ask the AI agent to create workflows from natural language:
+Ask the AI agent:
 
 ```
-"Create a workflow that:
- - Opens Firefox
- - Navigates to example.com
- - Fills out the contact form
- - Takes a screenshot of the confirmation page"
+Use list_workflows to verify the MCP server is working
 ```
 
-The agent will use `create_workflow` to generate FSM files in `workflows/my_workflows/`.
+## Usage
 
-### Deploy and Run
+### Creating Workflows
 
-```
-1. Review generated workflow files
-2. Upload with update_workflow
-3. Run with create_run
-4. Check status with get_run_status
-5. Get results with get_run_video
-```
-
-### List and Inspect
+Ask your AI agent to create a workflow:
 
 ```
-- list_workflows: See all workflows in your deployment
-- list_runs: See recent runs for a workflow
-- get_run_logs: Fetch execution logs
+Create a workflow that navigates to google.com and takes a screenshot
 ```
 
----
+The AI will use `create_workflow` to generate FSM files in `workflows/my_workflows/`, then upload and run them using the available MCP tools.
 
-## Available MCP Tools
+### Available MCP Tools
 
 | Tool | Description |
 |------|-------------|
 | `create_workflow` | Generate FSM workflow files from natural language |
-| `update_workflow` | Upload workflow files to S3 and update registry |
-| `create_run` | Trigger workflow execution on the NenAI platform |
-| `get_run_status` | Check the status of a workflow run |
-| `get_run_logs` | Fetch execution logs from the container |
+| `update_workflow` | Upload workflow to NenAI platform (S3 + DynamoDB) |
+| `create_run` | Execute a workflow |
+| `get_run_status` | Check workflow run status |
+| `get_run_logs` | Fetch execution logs from container |
 | `get_run_video` | Get video recording URL for a completed run |
 | `list_runs` | List recent runs for a workflow |
-| `list_workflows` | List all workflows in your deployment |
+| `list_workflows` | List all workflows in a deployment |
 
-> See **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** for detailed documentation of each tool.
-
----
-
-## Project Structure
-
-```
-mcp-quickstart/
-├── workflows/
-│   ├── my_workflows/       # Your workflows go here
-│   └── samples/            # Example workflows
-│       ├── get-appointments/
-│       └── download-documents/
-├── .env                    # Your API credentials (gitignored)
-├── setup-mcp.sh           # Setup script
-└── package.json
-```
-
----
+See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
 
 ## Troubleshooting
 
+Run diagnostics:
+
+```bash
+npm test
+```
+
+Common issues:
+
 | Problem | Solution |
 |---------|----------|
-| MCP server not found | Restart Cursor completely (⌘Q or Ctrl+Q) |
-| "API key not set" | Check `.env` has your `NEN_API_KEY`, then run `npm run setup` again |
-| "401 Unauthorized" | Verify API key is valid with your customer engineer |
-| "Cannot find module" | Run `npm install` in the mcp-quickstart directory |
-| Setup script fails | Ensure `.env` file exists and has valid credentials |
+| MCP tools not available | Restart Cursor completely (`Cmd+Q` / `Ctrl+Q`) |
+| "API key not set" | Check `.env` contains valid `NEN_API_KEY` |
+| "401 Unauthorized" | Verify API key with your customer engineer |
+| "Cannot find module" | Run `npm install` |
 
-### Common Issues
-
-**Environment variables not loading:**
-1. Verify `.env` file has correct format (no spaces around `=`)
-2. Run `npm run setup` to update Cursor configuration
-3. Completely restart Cursor (⌘Q, not just reload window)
-4. Check `~/.cursor/mcp.json` has the `env` field with your keys
-
-**MCP server tools not appearing:**
-1. Check Cursor's output panel for MCP server errors
-2. Verify node_modules/@nen/mcp-server exists
-3. Try reinstalling: `rm -rf node_modules && npm install`
-
----
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
 
 ## Documentation
 
-- **[QUICK_SETUP.md](QUICK_SETUP.md)** - Abbreviated setup guide
-- **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** - Detailed tool documentation
-- **[INSTALLATION.md](INSTALLATION.md)** - Advanced installation options
-- **[workflows/samples/](workflows/samples/)** - Example workflows to learn from
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributing guidelines
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Detailed troubleshooting guide
+- [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) - Complete MCP tools reference
+- [INSTALLATION.md](INSTALLATION.md) - Alternative installation methods
+- [.cursorrules](.cursorrules) - FSM workflow authoring guide
+- [workflows/samples/](workflows/samples/) - Example workflows
 
----
+## Security
 
-## Environment Variables
-
-The MCP server uses these environment variables (configured via setup script):
-
-- **`NEN_API_KEY`** (required): API key for NenAI platform
-  - Used by: `create_run`, `get_run_video`
-  - Get from your NenAI customer engineer
-
-- **`NEN_DEPLOYMENT_ID`** (optional): Your deployment UUID
-  - Used by: `list_workflows`
-  - Get from your customer engineer
-
-These are passed to the MCP server via Cursor's `mcp.json` configuration file.
-
----
-
-## Support
-
-- **Documentation Issues:** Open an issue on GitHub
-- **API Access:** Contact your NenAI customer engineer
-- **Bug Reports:** Include MCP server version and Cursor logs
-
----
-
-## License
-
-See [LICENSE](LICENSE) for details.
+Credentials are stored in `.env` and loaded at runtime via a wrapper script. They are never written to Cursor's configuration files. Run `npm test` to verify.

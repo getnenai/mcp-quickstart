@@ -5,8 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "setup": "bash setup-mcp.sh",
-    "postinstall": "node -e \"const fs=require('fs'); if(!fs.existsSync('.env')){fs.writeFileSync('.env','NEN_API_KEY=\\nNEN_DEPLOYMENT_ID=\\n');console.log('\\n✅ Created .env file.\\n📝 Next steps:\\n   1. Add your NEN_API_KEY and NEN_DEPLOYMENT_ID to .env\\n   2. Run: npm run setup\\n   3. Restart Cursor\\n')}\""
+    "setup": "bash setup-mcp.sh && bash test-setup.sh",
+    "setup:quick": "bash setup-mcp.sh",
+    "test": "bash test-setup.sh",
+    "postinstall": "node -e \"const fs=require('fs'); if(!fs.existsSync('.env')&&fs.existsSync('.env.example')){fs.copyFileSync('.env.example','.env');console.log('\\n✅ Created .env from .env.example\\n\\n📝 Next steps:\\n   1. Edit .env and add your credentials\\n   2. Run: npm run setup\\n   3. Restart Cursor (Cmd+Q or Ctrl+Q)\\n')}\""
   },
   "dependencies": {
     "@nen/mcp-server": "github:getnenai/mcp-server"
