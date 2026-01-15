@@ -1,64 +1,53 @@
 # NenAI MCP Quickstart
 
-Author computer use automations using natural language in Cursor or other AI-powered IDEs.
+Author computer use automations using natural language in Cursor.
 
-## Quick Start
+## Quick Setup (2 minutes)
 
-### 1. Clone this repository
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/getnenai/mcp-quickstart.git
 cd mcp-quickstart
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-This automatically creates a `.env` file with empty keys.
+### 2. Add your API key
 
-### 3. Add your API key
-
-Edit `.env` and add the values provided by your customer engineer:
+Edit the `.env` file and add your key:
 
 ```bash
 NEN_API_KEY=your_api_key_here
-NEN_DEPLOYMENT_ID=your_deployment_id
 ```
 
-### 4. Configure Cursor MCP
+> **Getting Your API Key:** Contact your NenAI customer engineer.
 
-Add the following to `~/.cursor/mcp.json`:
+### 3. Configure Cursor
 
-```json
+Run this command **from inside the mcp-quickstart directory**:
+
+```bash
+mkdir -p ~/.cursor && cat > ~/.cursor/mcp.json << EOF
 {
   "mcpServers": {
-    "nen": {
-      "command": "npx",
-      "args": ["@nen/mcp-server"],
-      "cwd": "/path/to/mcp-quickstart"
+    "nenai": {
+      "command": "node",
+      "args": ["$PWD/node_modules/@nen/mcp-server/dist/index.js"],
+      "cwd": "$PWD"
     }
   }
 }
+EOF
 ```
 
-> **Note:** Replace `/path/to/mcp-quickstart` with your actual clone path.
+### 4. Restart Cursor
 
-Restart Cursor to pick up the MCP server.
+Completely quit and reopen Cursor for the MCP server to load.
 
 ### 5. Verify setup
 
 Ask the AI agent:
-> "Use list_runs to verify the MCP server is working"
-
-If configured correctly, you'll see a response from the NenAI API.
-
-### 6. Start authoring workflows
-
-Ask the AI agent to create workflows:
-> "Create a workflow that navigates to google.com and takes a screenshot"
+> "Use nen_list_runs to verify the MCP server is working"
 
 ---
 
@@ -66,32 +55,44 @@ Ask the AI agent to create workflows:
 
 | Tool | Description |
 |------|-------------|
-| `create_workflow` | Generate FSM workflow files from natural language |
-| `update_workflow` | Upload workflow changes to NenAI platform |
-| `create_run` | Trigger new workflow execution |
-| `get_run_status` | Check run status |
-| `get_run_logs` | Fetch execution logs |
-| `get_run_video` | Get URL for run recording video |
-| `list_runs` | List recent runs for a workflow |
+| `nen_create_workflow` | Generate FSM workflow files from natural language |
+| `nen_upload` | Upload workflow files to S3 and update DynamoDB |
+| `nen_run` | Trigger workflow execution on the NenAI platform |
+| `nen_status` | Check the status of a running workflow |
+| `nen_logs` | Fetch execution logs from the container |
+| `nen_artifacts` | Download run artifacts (videos, logs, screenshots) |
+| `nen_list_runs` | List recent runs for a workflow |
 
 ---
 
-## Directory Structure
+## Create Your First Workflow
 
-```
-mcp-quickstart/
-├── .cursorrules          # FSM authoring guide for AI agents
-├── workflows/
-│   ├── samples/          # Example workflows to learn from
-│   │   ├── get-appointments/
-│   │   └── download-documents/
-│   └── my_workflows/     # Your custom workflows go here
-└── .env                  # Your API credentials (not committed)
-```
+Ask your AI agent:
+> "Create a workflow that navigates to google.com and takes a screenshot"
+
+The agent will use `nen_create_workflow` to generate FSM workflow files in `workflows/my_workflows/`.
+
+Then:
+1. Review the generated files
+2. Upload with `nen_upload`
+3. Run with `nen_run`
+4. Check results with `nen_artifacts`
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| MCP server not found | Restart Cursor completely (Cmd+Q) |
+| "API key not set" | Check `.env` has your `NEN_API_KEY` |
+| "401 Unauthorized" | Verify API key is valid |
+| "Cannot find module" | Run `npm install` in the mcp-quickstart directory |
 
 ---
 
 ## Resources
 
-- **[.cursorrules](.cursorrules)** - FSM authoring reference for AI agents
-- **[samples/](workflows/samples/)** - Example workflows
+- **[.cursorrules](.cursorrules)** - FSM authoring guide for AI agents
+- **[workflows/samples/](workflows/samples/)** - Example workflows
+- **Support** - Contact your NenAI customer engineer
