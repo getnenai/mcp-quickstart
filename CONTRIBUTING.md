@@ -225,13 +225,13 @@ Before submitting, test your workflow thoroughly:
 
 3. **Monitor execution:**
    ```typescript
-   nen_status({ messageId: "run-message-id" })
+   get_run_status({ messageId: "run-message-id" })
    nen_logs({ messageId: "run-message-id" })
    ```
 
-4. **Review artifacts:**
+4. **Review logs:**
    ```typescript
-   nen_artifacts({ messageId: "run-message-id" })
+   nen_logs({ messageId: "run-message-id" })
    ```
 
 ### Test Cases

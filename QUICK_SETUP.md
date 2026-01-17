@@ -46,7 +46,7 @@ This writes/updates `~/.cursor/mcp.json` to use the remote MCP server.
 
 Ask the AI agent in Cursor:
 
-> "Use nen_list_workflows to verify the MCP server is working"
+> "Use list_workflows to verify the MCP server is working"
 
 ✅ You should see the MCP server tools responding!
 
@@ -83,10 +83,9 @@ Contact your NenAI customer engineer.
 | `nen_create_workflow` | Generate workflow files |
 | `nen_upload` | Deploy to platform |
 | `nen_run` | Execute workflow |
-| `nen_status` | Check run status |
+| `get_run_status` | Check run status |
 | `nen_logs` | View logs |
-| `nen_artifacts` | Download recordings |
-| `nen_list_runs` | List run history |
+| `list_runs` | List run history |
 
 ---
 

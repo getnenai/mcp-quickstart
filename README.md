@@ -37,7 +37,7 @@ Quit Cursor completely (`Cmd+Q` / `Ctrl+Q`) and reopen it.
 Ask the AI agent:
 
 ```
-Use nen_list_workflows to verify the MCP server is working
+Use list_workflows to verify the MCP server is working
 ```
 
 ## Usage
@@ -59,11 +59,9 @@ The AI will use `nen_create_workflow` to generate FSM files in `workflows/my_wor
 | `nen_create_workflow` | Generate FSM workflow files from natural language |
 | `nen_upload` | Upload workflow to NenAI platform |
 | `nen_run` | Execute a workflow |
-| `nen_status` | Check workflow run status |
-| `nen_artifacts` | Download run artifacts (recording + logs) |
-| `nen_list_runs` | List recent runs for a workflow |
-| `nen_list_workflows` | List all workflows in a deployment |
-| `nen_list_deployments` | List deployments available to your API key |
+| `get_run_status` | Check workflow run status |
+| `list_runs` | List recent runs for a workflow |
+| `list_workflows` | List all workflows in a deployment |
 
 See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
 

@@ -12,7 +12,7 @@ All notable changes to the NenAI MCP Quickstart repository.
   - Platform-specific instructions (macOS, Windows, Linux)
 
 - **MCP tools reference** (`TOOLS_REFERENCE.md`)
-  - Comprehensive documentation for all 7 MCP tools
+  - Comprehensive documentation for all 6 MCP tools
   - Example usage for each tool
   - Parameters and response formats
   - Typical workflow patterns
