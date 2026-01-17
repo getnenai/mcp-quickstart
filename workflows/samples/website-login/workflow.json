@@ -1,0 +1,160 @@
+{
+    "metadata": {
+        "recording_mode": "tool_calls",
+        "mode": "anthropic",
+        "tool_version": "computer_use_20250124"
+    },
+    "model": "claude-sonnet-4-20250514",
+    "provider": "anthropic",
+    "tool_version": "computer_use_20250124",
+    "spans": [
+        {
+            "id": "setup",
+            "name": "Environment Setup",
+            "description": "Launch browser and navigate"
+        },
+        {
+            "id": "auth",
+            "name": "Authentication",
+            "description": "Login to the website"
+        },
+        {
+            "id": "complete",
+            "name": "Completion",
+            "description": "Verify login success"
+        }
+    ],
+    "variables": [
+        {
+            "name": "WEB_URL",
+            "value": "",
+            "description": "URL of the website to log in to"
+        },
+        {
+            "name": "USERNAME",
+            "value": "",
+            "description": "Username or email for login"
+        },
+        {
+            "name": "PASSWORD",
+            "value": "",
+            "type": "password",
+            "secret_id": "login_password",
+            "description": "Password for login"
+        }
+    ],
+    "states": [
+        {
+            "id": "launch_browser",
+            "description": "Launch the browser",
+            "message_template": "Find and click the Chromium or Firefox icon to launch the browser.",
+            "max_attempts": 2,
+            "span_id": "setup"
+        },
+        {
+            "id": "dismiss_popups",
+            "description": "Dismiss any startup popups",
+            "message_template": "Close any welcome messages, popups, or dialogs.",
+            "max_iterations": 5,
+            "max_attempts": 1,
+            "span_id": "setup"
+        },
+        {
+            "id": "focus_address_bar",
+            "description": "Click address bar",
+            "message_template": "Click the address bar at the top of the browser.",
+            "max_iterations": 3,
+            "max_attempts": 1,
+            "span_id": "setup"
+        },
+        {
+            "id": "type_url",
+            "description": "Type the login URL",
+            "tool": "computer",
+            "tool_input_template": {
+                "action": "type",
+                "text": "${WEB_URL}"
+            },
+            "max_attempts": 1,
+            "span_id": "setup"
+        },
+        {
+            "id": "press_enter",
+            "description": "Navigate to the URL",
+            "tool": "computer",
+            "tool_input_template": {
+                "action": "key",
+                "text": "Return"
+            },
+            "max_attempts": 1,
+            "span_id": "setup"
+        },
+        {
+            "id": "verify_page_loaded",
+            "description": "Verify page loaded",
+            "type": "verification",
+            "comparison_config": {
+                "strategy": "vlm_similarity",
+                "prompt": "Is the login page visible with username/email and password fields?"
+            },
+            "verification_config": {
+                "strategy": "verify_until",
+                "wait_timeout": 30,
+                "check_interval": 5
+            },
+            "max_attempts": 2,
+            "span_id": "setup"
+        },
+        {
+            "id": "enter_username",
+            "description": "Enter username",
+            "message_template": "Click the username or email field and type '${USERNAME}'.",
+            "max_iterations": 5,
+            "max_attempts": 1,
+            "span_id": "auth"
+        },
+        {
+            "id": "enter_password",
+            "description": "Click password field",
+            "message_template": "Click the password field.",
+            "max_iterations": 3,
+            "max_attempts": 1,
+            "span_id": "auth"
+        },
+        {
+            "id": "type_password",
+            "description": "Type the password",
+            "tool": "computer",
+            "tool_input_template": {
+                "action": "precise_type",
+                "text": "${PASSWORD}"
+            },
+            "max_attempts": 1,
+            "span_id": "auth"
+        },
+        {
+            "id": "click_login",
+            "description": "Click the login button",
+            "message_template": "Click the Login or Sign In button.",
+            "max_iterations": 5,
+            "max_attempts": 2,
+            "span_id": "auth"
+        },
+        {
+            "id": "verify_logged_in",
+            "description": "Verify successful login",
+            "type": "verification",
+            "comparison_config": {
+                "strategy": "vlm_similarity",
+                "prompt": "Is the user logged in? Look for a dashboard, profile menu, or welcome message."
+            },
+            "verification_config": {
+                "strategy": "verify_until",
+                "wait_timeout": 30,
+                "check_interval": 5
+            },
+            "max_attempts": 2,
+            "span_id": "complete"
+        }
+    ]
+}
