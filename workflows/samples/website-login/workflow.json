@@ -90,22 +90,6 @@
             "span_id": "setup"
         },
         {
-            "id": "verify_page_loaded",
-            "description": "Verify page loaded",
-            "type": "verification",
-            "comparison_config": {
-                "strategy": "vlm_similarity",
-                "prompt": "Is the login page visible with username/email and password fields?"
-            },
-            "verification_config": {
-                "strategy": "verify_until",
-                "wait_timeout": 30,
-                "check_interval": 5
-            },
-            "max_attempts": 2,
-            "span_id": "setup"
-        },
-        {
             "id": "enter_username",
             "description": "Enter username",
             "message_template": "Click the username or email field and type '${USERNAME}'.",
@@ -126,7 +110,7 @@
             "description": "Type the password",
             "tool": "computer",
             "tool_input_template": {
-                "action": "precise_type",
+                "action": "type",
                 "text": "${PASSWORD}"
             },
             "max_attempts": 1,

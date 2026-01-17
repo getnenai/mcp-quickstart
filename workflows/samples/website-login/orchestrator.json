@@ -2,6 +2,7 @@
     "name": "Website Login",
     "workflow_id": "sample-website-login",
     "description": "Navigate to a website and log in with provided credentials",
+    "model": "claude-sonnet-4-5-20250929",
     "variables": [
         {
             "name": "WEB_URL",
