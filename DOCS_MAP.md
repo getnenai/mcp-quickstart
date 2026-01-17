@@ -51,15 +51,14 @@
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────┐    │
 │  │  TOOLS_REFERENCE.md                                     │    │
-│  │  Complete reference for all 7 MCP tools                 │    │
+│  │  Complete reference for all 6 MCP tools                 │    │
 │  │                                                          │    │
 │  │  Tools covered:                                          │    │
 │  │  • nen_create_workflow  → Generate workflow files       │    │
 │  │  • nen_upload           → Deploy to platform            │    │
 │  │  • nen_run              → Execute workflow              │    │
-│  │  • nen_status           → Check run status              │    │
-│  │  • nen_artifacts        → Download recordings           │    │
-│  │  • nen_list_runs        → List run history              │    │
+│  │  • get_run_status      → Check run status               │    │
+│  │  • list_runs            → List run history              │    │
 │  │                                                          │    │
 │  │  For each tool:                                          │    │
 │  │  • Parameters with types                                │    │

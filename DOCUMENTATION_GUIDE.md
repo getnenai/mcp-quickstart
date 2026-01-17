@@ -85,9 +85,9 @@ Follow this path for the smoothest onboarding:
 - Copy and adapt the example
 
 ### "My workflow isn't working"
-1. **Get artifacts:** Use `nen_artifacts` to download logs/recording
-3. **Review guide:** Check common pitfalls in [.cursorrules](.cursorrules)
-4. **Get help:** See troubleshooting in [INSTALLATION.md](INSTALLATION.md#troubleshooting)
+1. **Check status/logs:** Use `get_run_status` and `nen_logs`
+2. **Review guide:** Check common pitfalls in [.cursorrules](.cursorrules)
+3. **Get help:** See troubleshooting in [INSTALLATION.md](INSTALLATION.md#troubleshooting)
 
 ### "The MCP server isn't connecting"
 → **[INSTALLATION.md - Troubleshooting](INSTALLATION.md#troubleshooting)**
@@ -145,9 +145,8 @@ Follow this path for the smoothest onboarding:
   - `nen_create_workflow` - Generate workflows
   - `nen_upload` - Deploy to platform
   - `nen_run` - Execute workflows
-  - `nen_status` - Check execution status
-  - `nen_artifacts` - Download recordings
-  - `nen_list_runs` - View run history
+  - `get_run_status` - Check execution status
+  - `list_runs` - View run history
 - Typical workflow patterns
 - Tips and best practices
 
@@ -212,11 +211,11 @@ Follow this path for the smoothest onboarding:
 1. **.cursorrules is your bible** - Master the FSM patterns
 2. **Test incrementally** - Small changes, frequent tests
 3. **Use verification states** - Wait for UI, don't rush
-4. **Watch the videos** - Artifacts show what actually happened
+4. **Review run logs** - Logs show what actually happened
 5. **Contribute back** - Share your workflows and patterns
 
 ### For Troubleshooters
-1. **Logs first** - Usually faster than downloading video
+1. **Logs first** - Usually fastest signal on failures
 2. **Check state transitions** - Review workflow_runner_flow.json
 3. **Compare successful runs** - What changed?
 4. **Read error messages carefully** - They're usually accurate

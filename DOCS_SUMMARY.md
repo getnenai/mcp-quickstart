@@ -31,7 +31,7 @@ This document summarizes all the documentation additions and improvements made t
 ---
 
 ### 2. TOOLS_REFERENCE.md (11.3 KB)
-**Purpose:** Complete reference documentation for all 7 MCP tools
+**Purpose:** Complete reference documentation for all 6 MCP tools
 
 **Contents:**
 - Tool overview table with requirements
@@ -39,9 +39,8 @@ This document summarizes all the documentation additions and improvements made t
   - `nen_create_workflow` - Parameters, examples, best practices
   - `nen_upload` - Deployment configuration
   - `nen_run` - Execution parameters and error handling
-  - `nen_status` - Status checking and response format
-  - `nen_artifacts` - Artifact download and structure
-  - `nen_list_runs` - Run history and filtering
+  - `get_run_status` - Status checking and response format
+- `list_runs` - Run history and filtering
 - Typical workflow lifecycle diagram
 - Tips and best practices for each tool
 - Common error messages and solutions
@@ -299,7 +298,7 @@ User → README (overview)
 ## ✨ Highlights
 
 ### Most Comprehensive Document
-**TOOLS_REFERENCE.md** - Complete reference for all 7 tools with examples, parameters, responses, and use cases
+**TOOLS_REFERENCE.md** - Complete reference for all 6 tools with examples, parameters, responses, and use cases
 
 ### Most Useful for Beginners
 **INSTALLATION.md** - Step-by-step guide covers all platforms and solves most common setup issues

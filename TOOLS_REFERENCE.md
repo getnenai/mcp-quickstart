@@ -11,11 +11,9 @@ Quick reference guide for Nen MCP tools (via the **remote MCP server**).
 | `nen_create_workflow` | Generate workflow FSM files | No |
 | `nen_upload` | Upload workflow to platform | Yes |
 | `nen_run` | Execute a workflow | Yes |
-| `nen_status` | Check workflow run status | Yes |
-| `nen_artifacts` | Download run artifacts (video/logs) | Yes |
-| `nen_list_runs` | List recent runs for a workflow | Yes |
-| `nen_list_workflows` | List workflows in a deployment | Yes |
-| `nen_list_deployments` | List deployments available to your API key | Yes |
+| `get_run_status` | Check workflow run status | Yes |
+| `list_runs` | List recent runs for a workflow | Yes |
+| `list_workflows` | List workflows in a deployment | Yes |
 
 ---
 
@@ -199,7 +197,7 @@ nen_run({
 
 ---
 
-## nen_status
+## get_run_status
 
 Check the status of a running or completed workflow.
 
@@ -215,7 +213,7 @@ Check the status of a running or completed workflow.
 ### Example Usage
 
 ```typescript
-nen_status({
+get_run_status({
   messageId: "msg-xyz789"
 })
 ```
@@ -250,95 +248,8 @@ nen_status({
 
 ---
 
-## nen_artifacts
 
-Download run artifacts (videos, logs, state files) from the execution environment.
-
-### Parameters
-
-```typescript
-{
-  messageId: string;        // Message identifier
-  outputDir?: string;       // Where to save artifacts (default: ./artifacts)
-}
-```
-
-### Example Usage
-
-```typescript
-nen_artifacts({
-  workflowId: "123e4567-e89b-12d3-a456-426614174000",
-  messageId: "msg-xyz789",
-  outputDir: "./debug/run-xyz789"
-})
-```
-
-### Requirements
-
-- SSH access to the execution environment
-- `rsync` installed locally
-
-### Response
-
-```json
-{
-  "success": true,
-  "success": true
-}
-```
-
-### Use Cases
-
-- Debugging workflow failures
-- Watching the run recording
-- Downloading logs and run metadata
-
-### Parameters
-
-```typescript
-{
-  messageId: string;        // Message identifier
-  localPath?: string;       // Where to save artifacts (default: ./artifacts)
-}
-```
-
-### Example Usage
-
-```typescript
-nen_artifacts({
-  messageId: "msg-xyz789",
-  localPath: "./debug/run-xyz789"
-})
-```
-
-### Requirements
-
-- SSH access to the execution environment
-- `rsync` installed locally
-- Sufficient disk space for video files
-
-### Downloaded Files
-
-```
-artifacts/
-├── recording.mp4                    # Video recording of execution
-├── workflow.log                     # Complete execution log
-├── execution_state.json             # Final status
-├── progress_events.jsonl            # Timestamped events
-├── workflow_runner_flow.json        # State transitions
-└── workflow_runner_summary.json     # Summary statistics
-```
-
-### Use Cases
-
-- **Debugging:** Watch video to see what went wrong
-- **Verification:** Confirm workflow completed correctly
-- **Analysis:** Review state transitions and timings
-- **Documentation:** Show examples of workflow execution
-
----
-
-## nen_list_runs
+## list_runs
 
 List recent workflow runs.
 
@@ -354,7 +265,7 @@ List recent workflow runs.
 ### Example Usage
 
 ```typescript
-nen_list_runs({
+list_runs({
   workflowId: "123e4567-e89b-12d3-a456-426614174000",
   limit: 20
 })
@@ -388,7 +299,7 @@ nen_list_runs({
 
 ---
 
-## nen_list_workflows
+## list_workflows
 
 List all workflows in a deployment.
 
@@ -406,15 +317,15 @@ List all workflows in a deployment.
 
 ```typescript
 // List all workflows
-nen_list_workflows({})
+list_workflows({})
 
 // Specify deployment explicitly
-nen_list_workflows({
+list_workflows({
   deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174"
 })
 
 // Filter by organization and limit results
-nen_list_workflows({
+list_workflows({
   deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174",
   orgId: "f303bc4a-81fc-4e37-b4cc-1449b3782260",
   limit: 20
@@ -455,9 +366,9 @@ nen_list_workflows({
 ### Typical Workflow
 
 ```
-1. nen_list_workflows({}) → Get all available workflows
+1. list_workflows({}) → Get all available workflows
 2. Copy workflow ID from results
-3. nen_list_runs({ workflowId: "..." }) → See recent runs
+3. list_runs({ workflowId: "..." }) → See recent runs
 4. nen_run({ workflowId: "..." }) → Trigger new run
 ```
 
@@ -510,26 +421,12 @@ Response: runId and messageId
 ```
 Agent: "Check the status of that run"
 ↓
-Uses: nen_status with messageId
+Uses: get_run_status with messageId
 ↓
 Response: Current state and progress
 ```
 
-### 6. Debug (if needed)
-
-```
-Agent: "Get the artifacts for that run"
-↓
-Uses: nen_artifacts with messageId
-↓
-Review: Identifies issue in state "search_patient"
-
-Agent: "Watch the run recording"
-↓
-Watch: Sees wrong button was clicked
-```
-
-### 7. Iterate
+### 6. Iterate
 
 ```
 Developer: Edits FSM files to fix issue
@@ -562,8 +459,7 @@ Uses: nen_run with same input
 
 ### Debugging
 
-- **Check logs first:** Often faster than downloading video
-- **Use artifacts for visual issues:** When logs aren't clear about what happened
+- **Check logs first:** Often faster than re-running a workflow
 - **Compare successful runs:** What was different?
 - **Iterate quickly:** Small changes, frequent tests
 

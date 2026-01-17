@@ -58,7 +58,7 @@ Completely quit (Cmd+Q / Ctrl+Q) and reopen Cursor.
 ### Step 5: Verify
 
 Ask the AI agent:
-> "Use nen_list_workflows to verify the MCP server"
+> "Use list_workflows to verify the MCP server"
 
 ---
 
