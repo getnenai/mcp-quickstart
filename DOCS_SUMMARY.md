@@ -40,7 +40,6 @@ This document summarizes all the documentation additions and improvements made t
   - `nen_upload` - Deployment configuration
   - `nen_run` - Execution parameters and error handling
   - `nen_status` - Status checking and response format
-  - `nen_logs` - Log retrieval and use cases
   - `nen_artifacts` - Artifact download and structure
   - `nen_list_runs` - Run history and filtering
 - Typical workflow lifecycle diagram
@@ -154,19 +153,15 @@ This document summarizes all the documentation additions and improvements made t
 
 ---
 
-### 2. package.json
+### 2. setup-remote-mcp.sh
 **Changes:**
-- Updated postinstall script message
-- Removed `NEN_DEPLOYMENT_ID` (not needed)
-- Added helpful next steps in console output
-
----
+- Added a helper script to configure Cursor to use the **remote** Nen MCP server via `url`
 
 ## 📊 Documentation Statistics
 
 ### Total Documentation Added
 - **7 new files**
-- **2 files modified**
+- **Multiple files modified** (setup and docs updated for remote MCP)
 - **~48 KB** of new documentation
 - **9 major topics** covered comprehensively
 
@@ -359,12 +354,7 @@ The documentation now supports users at all skill levels:
 
 ## 🎉 Conclusion
 
-The mcp-quickstart repository now has:
-- **Comprehensive documentation** covering all user needs
-- **Clear learning path** from beginner to expert
-- **Easy navigation** with multiple entry points
-- **Self-service support** for common issues
-- **Contribution framework** for community growth
+The mcp-quickstart repository now documents **remote MCP server only** setup and usage.
 
 The documentation is ready for:
 - ✅ New user onboarding

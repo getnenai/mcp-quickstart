@@ -27,9 +27,7 @@ All notable changes to the NenAI MCP Quickstart repository.
   - Quick links reference table
 
 ### Changed
-- Updated `package.json` postinstall script
-  - Now only creates `NEN_API_KEY` field (removed `NEN_DEPLOYMENT_ID`)
-  - Enhanced console output with next steps
+- Updated documentation and examples for MCP tool usage
 
 ### Documentation Structure
 ```
@@ -57,3 +55,13 @@ mcp-quickstart/
 - Local development container setup
 - Workflow debugging tools
 - Community workflow marketplace
+
+## [Unreleased]
+
+### Changed
+- Switched to **remote MCP server only** (no local MCP server support).
+
+### Removed
+- Local MCP server wrapper/config scripts
+- Local MCP server publishing automation under `scripts/`
+- Node dependency wiring (`package.json`)

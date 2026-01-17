@@ -2,7 +2,7 @@
 
 ## What Changed
 
-Previously, the setup script wrote `NEN_API_KEY` and `NEN_DEPLOYMENT_ID` directly into `~/.cursor/mcp.json`. Now, credentials are kept secure in your local `.env` file and referenced at runtime.
+Previously, setup instructions often led users to paste secrets directly into `~/.cursor/mcp.json`. Now, this repo configures a **remote MCP server** using environment-variable substitution (`${env:...}`), so credentials don't need to be stored in config files.
 
 ## New Architecture
 
@@ -11,11 +11,9 @@ Previously, the setup script wrote `NEN_API_KEY` and `NEN_DEPLOYMENT_ID` directl
 {
   "mcpServers": {
     "nenai": {
-      "command": "node",
-      "args": ["..."],
-      "env": {
-        "NEN_API_KEY": "actual_key_here",
-        "NEN_DEPLOYMENT_ID": "actual_id_here"
+      "url": "https://your-remote-mcp-url",
+      "headers": {
+        "X-Api-Key": "actual_key_here"
       }
     }
   }
@@ -27,9 +25,10 @@ Previously, the setup script wrote `NEN_API_KEY` and `NEN_DEPLOYMENT_ID` directl
 {
   "mcpServers": {
     "nenai": {
-      "command": "bash",
-      "args": ["/path/to/start-mcp-server.sh"],
-      "cwd": "/path/to/mcp-quickstart"
+      "url": "${env:NEN_MCP_URL}",
+      "headers": {
+        "X-Api-Key": "${env:NEN_API_KEY}"
+      }
     }
   }
 }
@@ -37,25 +36,14 @@ Previously, the setup script wrote `NEN_API_KEY` and `NEN_DEPLOYMENT_ID` directl
 
 ## How It Works
 
-1. **Wrapper Script** (`start-mcp-server.sh`)
-   - Loads environment variables from `.env` file
-   - Exports them to the environment
-   - Starts the MCP server with those variables
-
-2. **Setup Script** (`setup-mcp.sh`)
-   - Verifies `.env` exists and contains required credentials
-   - Creates the wrapper script
-   - Configures `mcp.json` to use the wrapper (no credentials written)
-
-3. **Environment File** (`.env`)
-   - Your credentials stay here and only here
-   - Never committed to git (in `.gitignore`)
-   - Easy to update without re-running setup
+1. `~/.cursor/mcp.json` points to the **remote** Nen MCP server via `url`.
+2. `mcp.json` references credentials via `${env:NEN_API_KEY}` (Cursor substitutes it at runtime).
+3. You can keep secrets out of git, out of docs, and out of config files.
 
 ## Benefits
 
 ✅ **Security**: Credentials never written to `mcp.json`  
-✅ **Flexibility**: Update `.env` without re-running setup  
+✅ **Flexibility**: Update environment variables without editing JSON  
 ✅ **Portability**: Share `mcp.json` safely (no secrets)  
 ✅ **Best Practice**: Follows 12-factor app methodology  
 
@@ -64,29 +52,19 @@ Previously, the setup script wrote `NEN_API_KEY` and `NEN_DEPLOYMENT_ID` directl
 Simply run:
 
 ```bash
-npm run setup
+bash setup-remote-mcp.sh
 ```
-
-This single command:
-1. Creates the wrapper script
-2. Updates `mcp.json` to use the wrapper
-3. Validates the entire setup
-4. Confirms no secrets leaked
 
 Then restart Cursor completely (Cmd+Q or Ctrl+Q).
 
 ## Security Hardening Applied
 
 ### 1. Error Handling
-- ✅ Wrapper fails fast if `.env` is missing (no silent failures)
-- ✅ Setup validates wrapper script exists before configuring
-- ✅ Both scripts validate required environment variables
+- ✅ Setup fails fast if required environment variables are missing
 - ✅ Configuration verification after writing `mcp.json`
 
 ### 2. Safe .env Parsing
-- ✅ Using `source` instead of `cat | xargs` (prevents shell injection)
-- ✅ Proper variable export with `set -a` / `set +a`
-- ✅ No unsafe command substitution
+- ✅ No `.env` parsing required by the repo
 
 ### 3. Backup & Recovery
 - ✅ Automatic backup of existing `mcp.json` with timestamp
@@ -94,10 +72,7 @@ Then restart Cursor completely (Cmd+Q or Ctrl+Q).
 - ✅ Non-destructive updates
 
 ### 4. Validation & Testing
-- ✅ Test script (`test-setup.sh`) validates entire setup
-- ✅ Checks for credential leakage in `mcp.json`
-- ✅ Verifies file permissions and dependencies
-- ✅ npm test integration
+- ✅ `mcp.json` continues to avoid embedded secrets when using `${env:...}`
 
 ### 5. Documentation
 - ✅ Comprehensive troubleshooting guide
@@ -106,10 +81,6 @@ Then restart Cursor completely (Cmd+Q or Ctrl+Q).
 
 ## Files Involved
 
-- `.env.example` - Template for creating `.env`
-- `.env` - Your actual credentials (gitignored)
-- `start-mcp-server.sh` - Hardened wrapper that loads `.env` and starts server
-- `setup-mcp.sh` - Enhanced setup script with validation and backup
-- `test-setup.sh` - Automated testing and validation script
+- `setup-remote-mcp.sh` - Writes/updates `~/.cursor/mcp.json` for remote MCP
 - `TROUBLESHOOTING.md` - Comprehensive troubleshooting guide
 - `~/.cursor/mcp.json` - Cursor config (no secrets, verified clean)

@@ -1,61 +1,51 @@
-# MCP Server Installation Guide
+# Nen Remote MCP Server Installation Guide
+
+This repo no longer supports running a local MCP server. Cursor should connect to the **remote Nen MCP server** via `url`.
 
 ## Prerequisites
 
-- **Node.js** 18+ ([download](https://nodejs.org))
+- **Cursor** (with support for remote MCP servers)
 - **API Key** from your NenAI customer engineer
+- **Remote MCP URL** from your NenAI customer engineer
 
 ---
 
 ## Installation
 
-### Step 1: Clone and Install
+### Step 1: Clone
 
 ```bash
 git clone https://github.com/getnenai/mcp-quickstart.git
 cd mcp-quickstart
-npm install
 ```
 
-This creates a `.env` file automatically.
+### Step 2: Set environment variables
 
-### Step 2: Add Your API Key
-
-Edit `.env` in the project root:
+Set these in the environment **Cursor runs with**:
 
 ```bash
-NEN_API_KEY=your_api_key_here
+export NEN_API_KEY="your_api_key_here"
+export NEN_MCP_URL="your_remote_mcp_url_here"
 ```
 
 ### Step 3: Configure Cursor
 
-Run this command **from inside the mcp-quickstart directory**:
+Run:
 
 ```bash
-mkdir -p ~/.cursor && cat > ~/.cursor/mcp.json << EOF
-{
-  "mcpServers": {
-    "nenai": {
-      "command": "node",
-      "args": ["$PWD/node_modules/@nen/mcp-server/dist/index.js"],
-      "cwd": "$PWD"
-    }
-  }
-}
-EOF
+bash setup-remote-mcp.sh
 ```
 
-This uses `$PWD` to automatically insert the full path to your mcp-quickstart directory.
-
-**Windows users:** Create the file manually at `%APPDATA%\Cursor\mcp.json`:
+Or manually create/update `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "nenai": {
-      "command": "node",
-      "args": ["C:\\path\\to\\mcp-quickstart\\node_modules\\@nen\\mcp-server\\dist\\index.js"],
-      "cwd": "C:\\path\\to\\mcp-quickstart"
+      "url": "${env:NEN_MCP_URL}",
+      "headers": {
+        "X-Api-Key": "${env:NEN_API_KEY}"
+      }
     }
   }
 }
@@ -63,65 +53,45 @@ This uses `$PWD` to automatically insert the full path to your mcp-quickstart di
 
 ### Step 4: Restart Cursor
 
-Completely quit (Cmd+Q on macOS, or close from system tray on Windows) and reopen Cursor.
+Completely quit (Cmd+Q / Ctrl+Q) and reopen Cursor.
 
-### Step 5: Verify Installation
+### Step 5: Verify
 
 Ask the AI agent:
-> "Use nen_list_runs to verify the MCP server"
-
-**Expected:** A response from the NenAI API (even if it's an empty list).
+> "Use nen_list_workflows to verify the MCP server"
 
 ---
 
 ## Troubleshooting
 
-### "Cannot find module"
-
-The path to the MCP server is incorrect.
-
-1. Verify you ran `npm install` in the mcp-quickstart directory
-2. Check that `node_modules/@nen/mcp-server/dist/index.js` exists
-3. Verify the paths in `~/.cursor/mcp.json` are correct absolute paths
-
-### "NEN_API_KEY environment variable not set"
-
-1. Check `.env` file exists and has your API key
-2. Restart Cursor completely (not just reload window)
-
-### "API request failed with status 401"
-
-1. Verify API key is correct (no typos)
-2. Contact your NenAI customer engineer to verify key validity
-
-### "Network error: fetch failed"
-
-1. Check internet connection
-2. Test: `curl https://api.getnen.ai/health`
-3. Check firewall/proxy settings
-
-### MCP server not appearing
+### MCP tools not showing up
 
 1. Validate JSON syntax in `~/.cursor/mcp.json`
-2. Ensure Cursor was fully restarted (Cmd+Q, not just reload)
-3. Check Cursor's output panel for error messages
+2. Ensure Cursor was fully restarted (Cmd+Q / Ctrl+Q, not just reload window)
+3. Confirm `mcp.json` uses `url` (remote) and not `command` (local)
+
+### 401 Unauthorized
+
+1. Verify `NEN_API_KEY` is correct
+2. Ensure Cursor can read `${env:NEN_API_KEY}` (restart Cursor after changing env vars)
+3. Contact your NenAI customer engineer to verify key validity/permissions
+
+### Network errors
+
+1. Check internet connection / proxy / firewall
+2. Confirm `NEN_MCP_URL` is correct
 
 ---
 
 ## Updating
 
-```bash
-cd mcp-quickstart
-npm update @nen/mcp-server
-```
-
-Restart Cursor after updating.
+Remote MCP tools are updated server-side. Restart Cursor if you change `mcp.json` or environment variables.
 
 ---
 
 ## Uninstallation
 
-1. Remove the "nenai" entry from `~/.cursor/mcp.json`
+1. Remove the `"nenai"` entry from `~/.cursor/mcp.json`
 2. Restart Cursor
 
 ---
@@ -130,5 +100,4 @@ Restart Cursor after updating.
 
 Contact your NenAI customer engineer with:
 - Full error message
-- Output of `node --version`
-- Contents of `~/.cursor/mcp.json`
+- Contents of `~/.cursor/mcp.json` (redact any secrets if you added them)

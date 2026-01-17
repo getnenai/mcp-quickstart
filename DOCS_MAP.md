@@ -58,7 +58,6 @@
 │  │  • nen_upload           → Deploy to platform            │    │
 │  │  • nen_run              → Execute workflow              │    │
 │  │  • nen_status           → Check run status              │    │
-│  │  • nen_logs             → View execution logs           │    │
 │  │  • nen_artifacts        → Download recordings           │    │
 │  │  • nen_list_runs        → List run history              │    │
 │  │                                                          │    │
@@ -197,8 +196,7 @@
 │  ├── 📜 LICENSE                 # MIT license                   │
 │  ├── 📊 DOCS_SUMMARY.md         # This summary                  │
 │  ├── 🎯 .cursorrules            # FSM authoring                 │
-│  ├── 📦 package.json            # Dependencies                  │
-│  ├── 🔐 .env                    # API key (not committed)       │
+│  ├── 🔧 setup-remote-mcp.sh     # Configure remote MCP in Cursor │
 │  └── 📁 workflows/                                               │
 │      ├── samples/               # Example workflows             │
 │      │   ├── get-appointments/                                  │
@@ -217,7 +215,7 @@
 │  • Bookmark TOOLS_REFERENCE.md for tool usage                   │
 │  • Study .cursorrules before authoring workflows                │
 │  • Check samples/ for working examples                          │
-│  • Restart IDE after changing .env or config                    │
+│  • Restart IDE after changing env vars or config                │
 │  • Use absolute paths in MCP configuration                      │
 │  • Contact customer engineer for API key issues                 │
 │                                                                  │
