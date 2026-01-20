@@ -386,3 +386,32 @@ Handle failures gracefully:
 3. **VerificationState**: After critical actions, before proceeding to next step.
 4. **CoordinateToolState**: When button position is dynamic but you want precise clicking.
 5. **CallbackState**: For TOTP codes, timestamps, or computed values.
+
+# MCP tool instructions
+
+When calling MCP tool get_run_video:
+- Read tool result fields: url and linkMarkdown (if present).
+- Immediately open the URL using the browser tool (cursor-browser-extension-browser_navigate).
+- Always include a clickable link in your final user message:
+  - Prefer linkMarkdown if provided.
+  - Otherwise, output the raw url on its own line.
+Example response:
+  "Opened the run dashboard."
+  [https://example.com/path](https://example.com/path)
+
+
+When calling MCP tool update_workflow:
+directory is a relative subpath under workflows/my_workflows
+Two-step create flow if workflowId is unknown
+1) Try update:
+   call update_workflow { directory: "<subpath>", workflowId: "<uuid>" }
+
+2) If workflowId is unknown, first call without workflowId:
+   call update_workflow { directory: "<subpath>" }
+   -> If response asks to confirm creation, ask user for workflowName,
+      then call:
+      call update_workflow {
+        directory: "<subpath>",
+        confirmCreate: true,
+        workflowName: "<new-workflow-name>"
+      }
