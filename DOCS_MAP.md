@@ -18,32 +18,18 @@
 │                      🚀 GETTING STARTED                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐ │
-│  │  README.md       │  │ QUICK_SETUP.md   │  │ workflows/   │ │
-│  │  • Overview      │  │ • One-pager      │  │  samples/    │ │
-│  │  • Quick start   │  │ • Commands       │  │  • Examples  │ │
-│  │  • 6 steps       │  │ • Print ready    │  │  • Patterns  │ │
-│  └──────────────────┘  └──────────────────┘  └──────────────┘ │
+│  ┌────────────────────────────────────┐  ┌──────────────┐      │
+│  │  README.md                         │  │ workflows/   │      │
+│  │  • Prerequisites                   │  │  samples/    │      │
+│  │  • Installation (auto & manual)    │  │  • Examples  │      │
+│  │  • First workflow                  │  │  • Patterns  │      │
+│  │  • Tools overview                  │  │              │      │
+│  │  • Troubleshooting                 │  │              │      │
+│  │  • Advanced topics                 │  │              │      │
+│  └────────────────────────────────────┘  └──────────────┘      │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────┐
-│                       ⚙️  INSTALLATION                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────┐    │
-│  │  INSTALLATION.md                                        │    │
-│  │  Comprehensive setup guide                              │    │
-│  │  • Prerequisites                                        │    │
-│  │  • Step-by-step installation                            │    │
-│  │  • Cursor / Windsurf / Claude Desktop                   │    │
-│  │  • macOS / Windows / Linux                              │    │
-│  │  • Verification steps                                   │    │
-│  │  • 15+ troubleshooting solutions                        │    │
-│  │  • Advanced configuration                               │    │
-│  └────────────────────────────────────────────────────────┘    │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
 │                      🛠️  USING THE TOOLS                         │
@@ -131,13 +117,12 @@
 │  I want to...                           → Go to...              │
 │  ───────────────────────────────────────────────────────────────│
 │  Understand the docs                    → DOCUMENTATION_GUIDE   │
-│  Install the MCP server                 → INSTALLATION.md       │
-│  Quick setup reference                  → QUICK_SETUP.md        │
+│  Install the MCP server                 → README.md             │
 │  Learn what each tool does              → TOOLS_REFERENCE.md    │
 │  Create my first workflow               → README.md + samples/  │
 │  Master FSM authoring                   → .cursorrules          │
 │  See example workflows                  → workflows/samples/    │
-│  Troubleshoot installation              → INSTALLATION.md       │
+│  Troubleshoot installation              → README.md             │
 │  Debug a workflow run                   → TOOLS_REFERENCE.md    │
 │  Contribute workflows                   → CONTRIBUTING.md       │
 │  See what's changed                     → CHANGELOG.md          │
@@ -149,10 +134,9 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  Week 1: Basics                                                  │
-│  ├─ README.md + QUICK_SETUP.md                                  │
-│  ├─ INSTALLATION.md                                             │
-│  ├─ First workflow                                              │
-│  └─ TOOLS_REFERENCE.md (basics)                                 │
+│  ├─ README.md (installation & first workflow)                   │
+│  ├─ TOOLS_REFERENCE.md (basics)                                 │
+│  └─ workflows/samples/                                          │
 │                                                                  │
 │  Week 2: Intermediate                                            │
 │  ├─ .cursorrules (state types)                                  │
@@ -172,11 +156,11 @@
 │                    🆘 TROUBLESHOOTING                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  Installation issues          → INSTALLATION.md §Troubleshooting│
-│  API key problems             → INSTALLATION.md §API Key Issues │
+│  Installation issues          → README.md §Troubleshooting      │
+│  API key problems             → README.md §Troubleshooting      │
 │  Tool usage questions         → TOOLS_REFERENCE.md              │
 │  Workflow not working         → .cursorrules §Common Pitfalls   │
-│  Network connectivity         → INSTALLATION.md §Network Issues │
+│  Network connectivity         → README.md §Troubleshooting      │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -185,15 +169,14 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  mcp-quickstart/                                                 │
-│  ├── 📄 README.md               # Start here                    │
+│  ├── 📄 README.md               # Start here (complete guide)   │
 │  ├── 📘 DOCUMENTATION_GUIDE.md  # Navigate docs                 │
-│  ├── 📗 INSTALLATION.md         # Setup guide                   │
 │  ├── 📕 TOOLS_REFERENCE.md      # Tool reference                │
 │  ├── 📙 CONTRIBUTING.md         # How to contribute             │
-│  ├── 📝 QUICK_SETUP.md          # One-page setup                │
 │  ├── 📋 CHANGELOG.md            # Version history               │
 │  ├── 📜 LICENSE                 # MIT license                   │
-│  ├── 📊 DOCS_SUMMARY.md         # This summary                  │
+│  ├── 📊 DOCS_SUMMARY.md         # Documentation summary         │
+│  ├── 🗺️  DOCS_MAP.md            # This map                      │
 │  ├── 🎯 .cursorrules            # FSM authoring                 │
 │  ├── 🔧 setup-remote-mcp.sh     # Configure remote MCP in Cursor │
 │  └── 📁 workflows/                                               │
@@ -208,14 +191,13 @@
 │                      💡 QUICK TIPS                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  • Start with DOCUMENTATION_GUIDE.md to understand structure    │
+│  • Start with README.md for complete setup guide                │
 │  • Follow the learning path for best results                    │
-│  • Use QUICK_SETUP.md for installation reference                │
+│  • Use DOCUMENTATION_GUIDE.md to navigate docs                  │
 │  • Bookmark TOOLS_REFERENCE.md for tool usage                   │
 │  • Study .cursorrules before authoring workflows                │
 │  • Check samples/ for working examples                          │
 │  • Restart IDE after changing env vars or config                │
-│  • Use absolute paths in MCP configuration                      │
 │  • Contact customer engineer for API key issues                 │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘

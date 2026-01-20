@@ -476,8 +476,7 @@ Uses: nen_run with same input
 
 ### Documentation
 - `.cursorrules` - Comprehensive FSM authoring guide
-- `INSTALLATION.md` - Setup and troubleshooting
-- `README.md` - Overview and quick start
+- `README.md` - Overview, installation, and quick start
 
 ### Support
 Contact your NenAI customer engineer with:
