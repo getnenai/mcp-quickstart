@@ -456,3 +456,16 @@ When presenting log analysis to the user:
 2. **Identify the state** where the failure occurred (if applicable)
 3. **Explain the likely root cause** based on the error pattern
 4. **Suggest specific remediation steps**
+
+
+## Validating the workflow
+
+It is very important that after creating a workflow JSON, to validate that it is valid JSON,
+but more so, that all the defined variables are used, or if any are used, they are defined.
+If the prompt instructs you to enter data such as text into input fields or select from
+checkboxes or from a group of radio buttons, especially if the data is a person's name,
+address, phone, payment amount, or some other proper noun or unique name, ask the user
+if it is okay to replace it with a variable name and if accepted, to replace it.
+
+If there is data to be extracted, also suggest a variable name along with success or error,
+and if error, what the message is.
