@@ -1,58 +1,81 @@
 # NenAI MCP Quickstart
 
+[![Install MCP](.github/install-button.svg)](#quick-install)
+
 Build computer use automations using natural language in Cursor. Author, test, and run browser automation workflows directly from your IDE.
 
-## Quick Setup
+---
 
-### 1. Configure environment variables
+## 🚀 Quick Install
+
+**3 ways to get started** - choose what works best for you:
+
+### Method 1: Interactive Setup (Recommended)
 
 ```bash
 git clone https://github.com/getnenai/mcp-quickstart.git
 cd mcp-quickstart
+bash setup-interactive.sh
 ```
 
-Export the variables Cursor will use to authenticate to the **remote Nen MCP server**:
+Guided setup with automatic configuration. Perfect for first-time users.
+
+### Method 2: One-Click Install
+
+1. Open `generate-install-link.html` in your browser
+2. Enter your credentials (API key + MCP URL)
+3. Click the generated link to install in Cursor
+
+Modern, visual setup experience.
+
+### Method 3: Manual Setup
 
 ```bash
+# 1. Set environment variables
 export NEN_API_KEY="your_api_key_here"
 export NEN_MCP_URL="your_remote_mcp_url_here"
-```
 
-Get `NEN_MCP_URL` from your NenAI customer engineer.
-
-### 2. Configure Cursor MCP
-
-```bash
+# 2. Configure Cursor
 bash setup-remote-mcp.sh
+
+# 3. Restart Cursor
 ```
 
-This writes/updates `~/.cursor/mcp.json` to use the remote MCP server (no local server process).
+Full control for advanced users.
 
-### 3. Restart Cursor
+> **Get credentials:** Contact your NenAI customer engineer for `NEN_API_KEY` and `NEN_MCP_URL`
 
-Quit Cursor completely (`Cmd+Q` / `Ctrl+Q`) and reopen it.
+📖 **Detailed setup instructions:** See [QUICK_SETUP_V2.md](QUICK_SETUP_V2.md)
 
-### 4. Verify
+---
 
-Ask the AI agent:
+## ✅ Verify Installation
+
+After setup, ask your AI agent:
 
 ```
 Use nen_list_workflows to verify the MCP server is working
 ```
 
-## Usage
+---
 
-### Creating Workflows
+## 🎯 Your First Workflow
 
-Ask your AI agent to create a workflow:
+Create a workflow with natural language:
 
 ```
 Create a workflow that navigates to google.com and takes a screenshot
 ```
 
-The AI will use `nen_create_workflow` to generate FSM files in `workflows/my_workflows/`, then upload and run them using the available MCP tools.
+The AI will:
+1. ✨ Generate FSM workflow files
+2. 📤 Upload to the NenAI platform
+3. ▶️ Execute the workflow
+4. 📊 Show you the results
 
-### Available MCP Tools
+---
+
+## 🛠️ Available MCP Tools
 
 | Tool | Description |
 |------|-------------|
@@ -65,28 +88,175 @@ The AI will use `nen_create_workflow` to generate FSM files in `workflows/my_wor
 | `nen_list_workflows` | List all workflows in a deployment |
 | `nen_list_deployments` | List deployments available to your API key |
 
-See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
+📚 **Full documentation:** [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)
 
-## Troubleshooting
+---
 
-Common issues:
+## 📂 Sample Workflows
+
+Explore ready-to-use examples in `workflows/samples/`:
+
+| Workflow | Description |
+|----------|-------------|
+| **website-login** | Navigate to a website and log in with credentials |
+| **get-appointments** | Extract appointment data from a web application |
+| **download-documents** | Automate document downloads from websites |
+
+---
+
+## 📖 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [QUICK_SETUP_V2.md](QUICK_SETUP_V2.md) | Complete setup guide with all methods |
+| [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) | Detailed MCP tools reference |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Solutions to common issues |
+| [INSTALLATION.md](INSTALLATION.md) | Alternative installation methods |
+| [.cursorrules](.cursorrules) | FSM workflow authoring guide |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+
+---
+
+## 🏗️ Workflow Structure
+
+Workflows use a **Finite State Machine (FSM)** model with two file types:
+
+### orchestrator.json
+High-level workflow definition:
+- Variables (inputs)
+- States (checkpoints)
+- Transitions (execution flow)
+- Retry/timeout configuration
+
+### workflow.json
+Detailed state machine:
+- LLMState (agentic actions)
+- ToolState (deterministic actions)
+- VerificationState (wait for conditions)
+- CoordinateToolState (find & click)
+- CallbackState (dynamic values)
+
+📖 **Learn more:** Read [.cursorrules](.cursorrules) for the complete authoring guide
+
+---
+
+## 🔒 Security
+
+✅ Credentials are provided via **environment variables**  
+✅ Referenced in `mcp.json` using `${env:...}` substitution  
+✅ Never committed to git  
+✅ Remote MCP server uses secure HTTPS with API key authentication
+
+See [SECURITY_IMPROVEMENTS.md](SECURITY_IMPROVEMENTS.md) for details.
+
+---
+
+## 🐛 Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
 | MCP tools not available | Restart Cursor completely (`Cmd+Q` / `Ctrl+Q`) |
-| "401 Unauthorized" | Verify `NEN_API_KEY` is correct and Cursor can read it |
-| "401 Unauthorized" | Verify API key with your customer engineer |
+| "401 Unauthorized" | Verify `NEN_API_KEY` and contact your customer engineer |
+| Env vars not loading | Set vars before launching Cursor; restart terminal |
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
+📖 **Detailed solutions:** [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
-## Documentation
+---
 
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Detailed troubleshooting guide
-- [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) - Complete MCP tools reference
-- [INSTALLATION.md](INSTALLATION.md) - Alternative installation methods
-- [.cursorrules](.cursorrules) - FSM workflow authoring guide
-- [workflows/samples/](workflows/samples/) - Example workflows
+## 💡 Tips
 
-## Security
+### Environment Setup Pattern
 
-Credentials are provided via environment variables and referenced in `mcp.json` using `${env:...}`. They are never committed to git.
+All workflows should start with these states:
+1. Launch browser
+2. Dismiss popups
+3. Focus address bar
+4. Type URL
+5. Press Enter
+6. Verify page loaded
+
+This ensures consistent, reproducible execution.
+
+### Best Practices
+
+✅ Use **LLMState** for dynamic UI interactions  
+✅ Use **ToolState** for exact coordinates/actions  
+✅ Use **VerificationState** after critical actions  
+✅ Keep `max_iterations` between 5-15  
+✅ Write specific verification prompts  
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Share your workflows, improvements, and ideas.
+
+1. Fork the repository
+2. Create a feature branch
+3. Add your workflow to `workflows/samples/`
+4. Submit a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## 📊 Workflow Lifecycle
+
+```
+1. Create    → nen_create_workflow generates FSM files
+2. Review    → Edit generated files as needed
+3. Upload    → nen_upload deploys to platform
+4. Execute   → nen_run triggers execution
+5. Monitor   → nen_status checks progress
+6. Debug     → nen_artifacts downloads recordings/logs
+7. Iterate   → Edit and re-upload
+```
+
+---
+
+## 🎓 Learning Resources
+
+### For Beginners
+- Start with [QUICK_SETUP_V2.md](QUICK_SETUP_V2.md)
+- Try the interactive setup
+- Run sample workflows
+- Ask AI to create simple workflows
+
+### For Advanced Users
+- Read [.cursorrules](.cursorrules) for FSM authoring
+- Study sample workflows in detail
+- Create custom state types
+- Implement failure recovery
+
+---
+
+## 🆘 Getting Help
+
+- **Need credentials?** Contact your NenAI customer engineer
+- **Technical issues?** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- **Feature requests?** Open an issue on GitHub
+- **Questions?** See [DOCS_MAP.md](DOCS_MAP.md) for all documentation
+
+---
+
+## 📜 License
+
+See [LICENSE](LICENSE) for details.
+
+---
+
+## 🌟 What's New
+
+### Recent Improvements
+
+✨ **Three installation methods** - interactive, one-click, manual  
+✨ **Visual install generator** - beautiful web interface  
+✨ **Cursor deeplink support** - one-click setup  
+✨ **Interactive setup script** - guided configuration  
+✨ **Improved documentation** - clearer, more organized  
+
+See [CHANGELOG.md](CHANGELOG.md) for full history.
+
+---
+
+**Ready to automate?** [Get started now](#quick-install) 🚀
