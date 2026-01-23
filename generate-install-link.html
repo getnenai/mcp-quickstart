@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NenAI MCP - Generate Install Link</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .help-text {
+            display: block;
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .link-container {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .copy-button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .copy-button:hover {
+            background: #5568d3;
+        }
+        
+        .open-button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .open-button:hover {
+            background: #218838;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .warning h4 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .warning p {
+            color: #856404;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .warning code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .env-vars {
+            background: #333;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 NenAI MCP Setup</h1>
+        <p class="subtitle">Generate a one-click install link for Cursor</p>
+        
+        <div class="input-group">
+            <label for="apiKey">API Key</label>
+            <span class="help-text">Get this from your NenAI customer engineer</span>
+            <input type="text" id="apiKey" placeholder="Your NenAI API key">
+        </div>
+        
+        <div class="input-group">
+            <label for="mcpUrl">MCP Server URL</label>
+            <span class="help-text">Get this from your NenAI customer engineer</span>
+            <input type="text" id="mcpUrl" placeholder="https://mcp.getnen.ai/">
+        </div>
+        
+        <button class="button" onclick="generateLink()">Generate Install Link</button>
+        
+        <div class="result" id="result">
+            <h3>✅ Installation Link Generated!</h3>
+            
+            <div class="link-container" id="linkContainer"></div>
+            
+            <button class="copy-button" onclick="copyLink()">📋 Copy Link</button>
+            <button class="open-button" onclick="openLink()">🚀 Open in Cursor</button>
+            
+            <div class="warning">
+                <h4>⚠️ Important: Set Environment Variables</h4>
+                <p>Before using the MCP server, add these to your shell profile (<code>~/.zshrc</code> or <code>~/.bashrc</code>):</p>
+                <div class="env-vars" id="envVars"></div>
+                <p>Then restart your terminal or run: <code>source ~/.zshrc</code></p>
+            </div>
+        </div>
+        
+        <div class="warning" style="margin-top: 30px;">
+            <h4>📚 Next Steps</h4>
+            <p>
+                1. Set environment variables in your shell profile<br>
+                2. Click "Open in Cursor" or paste the link in your browser<br>
+                3. Completely quit and restart Cursor (⌘Q or Ctrl+Q)<br>
+                4. Verify: Ask the AI "Use nen_list_workflows to verify the MCP server is working"
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        let generatedLink = '';
+        
+        function generateLink() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const mcpUrl = document.getElementById('mcpUrl').value.trim();
+            
+            if (!apiKey || !mcpUrl) {
+                alert('Please fill in both fields');
+                return;
+            }
+            
+            // Create the config object
+            const config = {
+                url: "${env:NEN_MCP_URL}",
+                headers: {
+                    "X-Api-Key": "${env:NEN_API_KEY}"
+                }
+            };
+            
+            // Convert to JSON and base64 encode
+            const configJson = JSON.stringify(config);
+            const configBase64 = btoa(configJson);
+            
+            // Generate the deeplink
+            generatedLink = `cursor://anysphere.cursor-deeplink/mcp/install?name=nenai&config=${configBase64}`;
+            
+            // Display the result
+            document.getElementById('linkContainer').textContent = generatedLink;
+            document.getElementById('envVars').innerHTML = `export NEN_API_KEY="${apiKey}"<br>export NEN_MCP_URL="${mcpUrl}"`;
+            document.getElementById('result').classList.add('show');
+        }
+        
+        function copyLink() {
+            navigator.clipboard.writeText(generatedLink).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        function openLink() {
+            window.location.href = generatedLink;
+        }
+    </script>
+</body>
+</html>

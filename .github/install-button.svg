@@ -1,0 +1,19 @@
+<svg width="220" height="40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="220" height="40" rx="6" fill="url(#gradient)"/>
+  
+  <text x="30" y="25" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="white">
+    Install MCP in Cursor
+  </text>
+  
+  <g transform="translate(8, 10)">
+    <circle cx="10" cy="10" r="8" fill="white" opacity="0.9"/>
+    <path d="M10 6 L10 14 M6 10 L14 10" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
