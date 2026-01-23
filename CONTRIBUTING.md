@@ -30,13 +30,6 @@ Thank you for your interest in contributing! This guide will help you create hig
 # Clone the repository
 git clone https://github.com/getnenai/mcp-quickstart.git
 cd mcp-quickstart
-
-# Install dependencies
-npm install
-
-# Set up your environment
-cp .env.example .env
-# Edit .env and add your NEN_API_KEY
 ```
 
 ---

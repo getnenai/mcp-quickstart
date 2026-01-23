@@ -23,9 +23,8 @@ Follow this path for the smoothest onboarding:
 
 ### 1. Installation (15 minutes)
 → **[INSTALLATION.md](INSTALLATION.md)**
-- Install Node.js if needed
-- Clone repository and run `npm install`
-- Configure MCP server in your IDE
+- Clone repository
+- Configure the **remote** MCP server in your IDE
 - Verify installation works
 
 ### 2. First Workflow (30 minutes)
@@ -86,8 +85,7 @@ Follow this path for the smoothest onboarding:
 - Copy and adapt the example
 
 ### "My workflow isn't working"
-1. **Check logs:** Use `nen_logs` ([TOOLS_REFERENCE.md](TOOLS_REFERENCE.md#nen_logs))
-2. **Watch video:** Use `nen_artifacts` to download recording
+1. **Get artifacts:** Use `nen_artifacts` to download logs/recording
 3. **Review guide:** Check common pitfalls in [.cursorrules](.cursorrules)
 4. **Get help:** See troubleshooting in [INSTALLATION.md](INSTALLATION.md#troubleshooting)
 
@@ -139,7 +137,7 @@ Follow this path for the smoothest onboarding:
 ---
 
 ### TOOLS_REFERENCE.md
-**Purpose:** Complete reference for all 7 MCP tools
+**Purpose:** Complete reference for Nen MCP tools
 
 **Key sections:**
 - Tool overview table
@@ -148,7 +146,6 @@ Follow this path for the smoothest onboarding:
   - `nen_upload` - Deploy to platform
   - `nen_run` - Execute workflows
   - `nen_status` - Check execution status
-  - `nen_logs` - Fetch logs
   - `nen_artifacts` - Download recordings
   - `nen_list_runs` - View run history
 - Typical workflow patterns
@@ -223,7 +220,7 @@ Follow this path for the smoothest onboarding:
 2. **Check state transitions** - Review workflow_runner_flow.json
 3. **Compare successful runs** - What changed?
 4. **Read error messages carefully** - They're usually accurate
-5. **Restart your IDE** - Environment variables need fresh start
+5. **Restart your IDE** - Environment-variable changes require a full restart
 
 ---
 

@@ -1,41 +1,38 @@
 # NenAI MCP Quick Setup
 
-Get started with NenAI MCP server in 3 minutes.
+Get started with the **remote Nen MCP server** in 3 minutes.
 
 ---
 
-## 1. Clone & Install
+## 1. Clone
 
 ```bash
 git clone https://github.com/getnenai/mcp-quickstart.git
 cd mcp-quickstart
-npm install
 ```
-
-A `.env` file will be created automatically.
 
 ---
 
-## 2. Add API Credentials
+## 2. Set environment variables
 
-Edit `.env` and add your credentials:
+Set these in the environment **Cursor runs with**:
 
 ```bash
-NEN_API_KEY=your_api_key_here
-NEN_DEPLOYMENT_ID=your_deployment_uuid_here  # Optional
+export NEN_API_KEY="your_api_key_here"
+export NEN_MCP_URL="your_remote_mcp_url_here"
 ```
 
-Get these from your NenAI customer engineer.
+Get `NEN_MCP_URL` from your NenAI customer engineer.
 
 ---
 
-## 3. Run Setup
+## 3. Configure Cursor MCP
 
 ```bash
-npm run setup
+bash setup-remote-mcp.sh
 ```
 
-This configures `~/.cursor/mcp.json` with your environment variables.
+This writes/updates `~/.cursor/mcp.json` to use the remote MCP server.
 
 ---
 
@@ -49,7 +46,7 @@ This configures `~/.cursor/mcp.json` with your environment variables.
 
 Ask the AI agent in Cursor:
 
-> "Use list_workflows to verify the MCP server is working"
+> "Use nen_list_workflows to verify the MCP server is working"
 
 ✅ You should see the MCP server tools responding!
 
@@ -67,23 +64,15 @@ Ask the AI agent in Cursor:
 
 **MCP server not found:**
 - Restart Cursor completely (⌘Q, not just reload)
-- Check `~/.cursor/mcp.json` was created by setup script
+- Check `~/.cursor/mcp.json` contains a `"url"` entry for `"nenai"`
 
 **API key errors:**
-- Verify `.env` has correct format (no spaces around `=`)
-- Run `npm run setup` again after editing `.env`
+- Verify `NEN_API_KEY` is set in your environment
+- Re-run `bash setup-remote-mcp.sh` after changing `NEN_MCP_URL`
 - Restart Cursor
 
 **Need help?**
 Contact your NenAI customer engineer.
-
-## 4. Restart Cursor
-
-Quit Cursor completely (Cmd+Q) and reopen.
-
-## 5. Verify
-
-Ask the agent: *"Use nen_list_runs to verify the MCP server"*
 
 ---
 

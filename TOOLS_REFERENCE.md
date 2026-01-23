@@ -1,6 +1,6 @@
 # MCP Tools Quick Reference
 
-Quick reference guide for all NenAI MCP server tools.
+Quick reference guide for Nen MCP tools (via the **remote MCP server**).
 
 ---
 
@@ -8,18 +8,18 @@ Quick reference guide for all NenAI MCP server tools.
 
 | Tool | Purpose | Requires API Key |
 |------|---------|------------------|
-| `create_workflow` | Generate workflow FSM files | No |
-| `update_workflow` | Deploy workflow to S3 | Yes |
-| `create_run` | Execute workflow | Yes |
-| `get_run_status` | Check run status | Yes (DynamoDB) |
-| `get_run_logs` | Fetch execution logs | Yes (SSH) |
-| `get_run_video` | Get video recording URL | Yes |
-| `list_runs` | List workflow runs | Yes (DynamoDB) |
-| `list_workflows` | List all workflows in deployment | Yes (DynamoDB) |
+| `nen_create_workflow` | Generate workflow FSM files | No |
+| `nen_upload` | Upload workflow to platform | Yes |
+| `nen_run` | Execute a workflow | Yes |
+| `nen_status` | Check workflow run status | Yes |
+| `nen_artifacts` | Download run artifacts (video/logs) | Yes |
+| `nen_list_runs` | List recent runs for a workflow | Yes |
+| `nen_list_workflows` | List workflows in a deployment | Yes |
+| `nen_list_deployments` | List deployments available to your API key | Yes |
 
 ---
 
-## create_workflow
+## nen_create_workflow
 
 Generate FSM workflow files from natural language descriptions.
 
@@ -50,7 +50,7 @@ Generate FSM workflow files from natural language descriptions.
 
 **Detailed Example:**
 ```typescript
-create_workflow({
+nen_create_workflow({
   description: "Search for a patient in the hospital system and export their appointment history",
   inputs: [
     {
@@ -96,7 +96,7 @@ create_workflow({
 
 ---
 
-## update_workflow
+## nen_upload
 
 Upload workflow files to S3 and register in DynamoDB.
 
@@ -142,7 +142,7 @@ nen_upload({
 
 ---
 
-## create_run
+## nen_run
 
 Trigger workflow execution on the NenAI platform.
 
@@ -199,7 +199,7 @@ nen_run({
 
 ---
 
-## get_run_status
+## nen_status
 
 Check the status of a running or completed workflow.
 
@@ -250,54 +250,48 @@ nen_status({
 
 ---
 
-## get_run_logs
+## nen_artifacts
 
-Fetch execution logs from the workflow container.
+Download run artifacts (videos, logs, state files) from the execution environment.
 
 ### Parameters
 
 ```typescript
 {
   messageId: string;        // Message identifier
-  tail?: number;            // Number of recent lines (default: 100)
+  outputDir?: string;       // Where to save artifacts (default: ./artifacts)
 }
 ```
 
 ### Example Usage
 
 ```typescript
-nen_logs({
+nen_artifacts({
+  workflowId: "123e4567-e89b-12d3-a456-426614174000",
   messageId: "msg-xyz789",
-  tail: 200
+  outputDir: "./debug/run-xyz789"
 })
 ```
 
 ### Requirements
 
 - SSH access to the execution environment
-- Valid SSH configuration in `~/.ssh/config`
+- `rsync` installed locally
 
 ### Response
 
 ```json
 {
   "success": true,
-  "logs": "2026-01-14 10:30:05 [INFO] Starting workflow...\n2026-01-14 10:30:07 [INFO] State: launch_browser\n..."
+  "success": true
 }
 ```
 
 ### Use Cases
 
 - Debugging workflow failures
-- Monitoring real-time execution
-- Understanding state transitions
-- Identifying errors and warnings
-
----
-
-## get_run_video
-
-Download run artifacts (videos, logs, state files) from the execution environment.
+- Watching the run recording
+- Downloading logs and run metadata
 
 ### Parameters
 
@@ -344,7 +338,7 @@ artifacts/
 
 ---
 
-## list_runs
+## nen_list_runs
 
 List recent workflow runs.
 
@@ -394,7 +388,7 @@ nen_list_runs({
 
 ---
 
-## list_workflows
+## nen_list_workflows
 
 List all workflows in a deployment.
 
@@ -402,7 +396,7 @@ List all workflows in a deployment.
 
 ```typescript
 {
-  deploymentId?: string;    // Optional: Deployment UUID (uses NEN_DEPLOYMENT_ID from env if not provided)
+  deploymentId?: string;    // Optional: Deployment UUID
   orgId?: string;           // Optional: Filter by organization UUID
   limit?: number;           // Optional: Max workflows to return (default: 50)
 }
@@ -411,16 +405,16 @@ List all workflows in a deployment.
 ### Example Usage
 
 ```typescript
-// List all workflows (uses NEN_DEPLOYMENT_ID from environment)
-list_workflows({})
+// List all workflows
+nen_list_workflows({})
 
 // Specify deployment explicitly
-list_workflows({
+nen_list_workflows({
   deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174"
 })
 
 // Filter by organization and limit results
-list_workflows({
+nen_list_workflows({
   deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174",
   orgId: "f303bc4a-81fc-4e37-b4cc-1449b3782260",
   limit: 20
@@ -454,17 +448,17 @@ list_workflows({
 ### Common Use Cases
 
 - Discovering available workflows in your deployment
-- Finding a workflow ID to use with `create_run`
+- Finding a workflow ID to use with `nen_run`
 - Checking when workflows were last updated
 - Seeing all workflows for a specific organization
 
 ### Typical Workflow
 
 ```
-1. list_workflows({}) → Get all available workflows
+1. nen_list_workflows({}) → Get all available workflows
 2. Copy workflow ID from results
-3. list_runs({ workflowId: "..." }) → See recent runs
-4. create_run({ workflowId: "..." }) → Trigger new run
+3. nen_list_runs({ workflowId: "..." }) → See recent runs
+4. nen_run({ workflowId: "..." }) → Trigger new run
 ```
 
 ---
@@ -476,7 +470,7 @@ list_workflows({
 ```
 Agent: "Create a workflow that searches for patients and downloads their records"
 ↓
-Uses: create_workflow
+Uses: nen_create_workflow
 ↓
 Output: FSM files in ./workflows/my_workflows/patient-search/
 ```
@@ -496,7 +490,7 @@ Commits: Saves changes
 ```
 Agent: "Upload the patient-search workflow"
 ↓
-Uses: update_workflow
+Uses: nen_upload
 ↓
 Result: Workflow available on platform
 ```
@@ -506,7 +500,7 @@ Result: Workflow available on platform
 ```
 Agent: "Run the patient-search workflow for John Doe"
 ↓
-Uses: create_run with input { PATIENT_NAME: "John Doe" }
+Uses: nen_run with input { PATIENT_NAME: "John Doe" }
 ↓
 Response: runId and messageId
 ```
@@ -516,7 +510,7 @@ Response: runId and messageId
 ```
 Agent: "Check the status of that run"
 ↓
-Uses: get_run_status with messageId
+Uses: nen_status with messageId
 ↓
 Response: Current state and progress
 ```
@@ -524,15 +518,13 @@ Response: Current state and progress
 ### 6. Debug (if needed)
 
 ```
-Agent: "Get the logs for that run"
+Agent: "Get the artifacts for that run"
 ↓
-Uses: get_run_logs with messageId
+Uses: nen_artifacts with messageId
 ↓
 Review: Identifies issue in state "search_patient"
 
-Agent: "Get the video recording"
-↓
-Uses: get_run_video with messageId
+Agent: "Watch the run recording"
 ↓
 Watch: Sees wrong button was clicked
 ```
@@ -544,11 +536,11 @@ Developer: Edits FSM files to fix issue
 ↓
 Agent: "Upload the updated workflow"
 ↓
-Uses: update_workflow (overwrites previous version)
+Uses: nen_upload (overwrites previous version)
 ↓
 Agent: "Run it again"
 ↓
-Uses: create_run with same input
+Uses: nen_run with same input
 ```
 
 ---
