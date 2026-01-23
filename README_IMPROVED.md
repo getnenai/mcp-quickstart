@@ -1,6 +1,6 @@
 # NenAI MCP Quickstart
 
-[![Install MCP](.github/install-button.svg)](#quick-install)
+[![Install MCP](.github/install-button.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=nenai&config=eyJ1cmwiOiIke2VudjpORU5fTUNQX1VSTH0iLCJoZWFkZXJzIjp7IlgtQXBpLUtleSI6IiR7ZW52Ok5FTl9BUElfS0VZfSJ9fQ==)
 
 Build computer use automations using natural language in Cursor. Author, test, and run browser automation workflows directly from your IDE.
 
