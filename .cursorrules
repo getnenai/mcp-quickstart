@@ -386,3 +386,86 @@ Handle failures gracefully:
 3. **VerificationState**: After critical actions, before proceeding to next step.
 4. **CoordinateToolState**: When button position is dynamic but you want precise clicking.
 5. **CallbackState**: For TOTP codes, timestamps, or computed values.
+
+# MCP tool instructions
+
+When calling MCP tool get_run_video:
+- Read tool result fields: url and linkMarkdown (if present).
+- Immediately open the URL using the browser tool (cursor-browser-extension-browser_navigate).
+- Always include a clickable link in your final user message:
+  - Prefer linkMarkdown if provided.
+  - Otherwise, output the raw url on its own line.
+Example response:
+  "Opened the run dashboard."
+  [https://example.com/path](https://example.com/path)
+
+
+When calling MCP tool update_workflow:
+directory is a relative subpath under workflows/my_workflows
+Two-step create flow if workflowId is unknown
+1) Try update:
+   call update_workflow { directory: "<subpath>", workflowId: "<uuid>" }
+
+2) If workflowId is unknown, first call without workflowId:
+   call update_workflow { directory: "<subpath>" }
+   -> If response asks to confirm creation, ask user for workflowName,
+      then call:
+      call update_workflow {
+        directory: "<subpath>",
+        confirmCreate: true,
+        workflowName: "<new-workflow-name>"
+      }
+
+When analyzing logs from the `get_run_logs` MCP tool response:
+
+## Log Format
+
+The log content is returned directly in the `content` field. Key patterns to look for:
+
+- **Timestamps**: `2026-01-20 14:30:45,123`
+- **Log levels**: `INFO`, `WARNING`, `ERROR`, `DEBUG`
+- **FSM transitions**: `Transitioning to state:`, `Entering state:`, `Exiting state:`
+- **Tool calls**: `Executing tool:`, `Tool result:`, `Tool error:`
+- **VLM responses**: `VLM verification:`, `Verification result:`
+- **Screenshots**: `Taking screenshot`, `Screenshot saved`
+
+## Analysis Steps
+
+1. **Find the failure point** - Search for `ERROR`, `Exception`, `Traceback`, or `FATAL`
+2. **Trace back** - Read 10-20 lines before the error for context
+3. **Check state flow** - Look for `Transitioning to state` entries to understand the workflow progression
+4. **Identify timeouts** - Search for `timeout`, `timed out`, or unusually long durations between timestamps
+5. **Check tool execution** - Look for `Tool error` or failed tool calls
+
+## Common Failure Patterns
+
+| Pattern | Likely Cause | Remediation |
+|---------|--------------|-------------|
+| `Screenshot failed` | VNC/display issue | Check VNC connection, restart container |
+| `Element not found` | UI state doesn't match expectation | Update selector or add wait state |
+| `Verification failed` | VLM couldn't confirm expected UI state | Adjust verification prompt or add more context |
+| `Tool execution timeout` | Action took too long | Increase timeout or simplify action |
+| `Connection refused` | Network/service connectivity issue | Check target application is running |
+| `NoSuchKey` | S3 object not found | Run may predate log storage or log was deleted |
+
+## Response Format
+
+When presenting log analysis to the user:
+
+1. **Quote the specific error line(s)** with 2-3 lines of surrounding context
+2. **Identify the state** where the failure occurred (if applicable)
+3. **Explain the likely root cause** based on the error pattern
+4. **Suggest specific remediation steps**
+
+
+## Validating the workflow
+
+It is very important that after creating a workflow JSON, to validate that it is valid JSON,
+but more so, that all the defined variables are used, or if any are used, they are defined.
+If the prompt instructs you to enter data such as text into input fields or select from
+checkboxes or from a group of radio buttons, especially if the data is a person's name,
+address, phone, payment amount, or some other proper noun or unique name, ask the user
+if it is okay to replace it with a variable name and if accepted, to replace it.
+
+If there is data to be extracted, also suggest a variable name along with success or error,
+and if error, what the message is.

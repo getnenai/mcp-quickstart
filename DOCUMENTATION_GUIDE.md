@@ -1,6 +1,6 @@
-# Documentation Overview
+# Documentation Guide
 
-Welcome to the NenAI MCP Quickstart! This guide will help you navigate the documentation.
+This guide helps you navigate the NenAI MCP Quickstart documentation and find what you need.
 
 ---
 
@@ -8,272 +8,89 @@ Welcome to the NenAI MCP Quickstart! This guide will help you navigate the docum
 
 | Document | Purpose | When to Use |
 |----------|---------|-------------|
-| **[README.md](README.md)** | Quick start and overview | First time setup, getting oriented |
-| **[INSTALLATION.md](INSTALLATION.md)** | Detailed installation guide | Setting up the MCP server in your IDE |
-| **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** | MCP tools documentation | Learning what each tool does |
-| **[.cursorrules](.cursorrules)** | FSM authoring guide | Creating and editing workflows |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines | Adding new workflows or improving docs |
-| **[CHANGELOG.md](CHANGELOG.md)** | Version history | Seeing what's changed |
+| **[README.md](README.md)** | Complete setup guide: installation, first workflow, troubleshooting | Start here - covers everything you need to get running |
+| **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** | Complete MCP tools reference with parameters and examples | When you need detailed tool documentation |
+| **[.cursorrules](.cursorrules)** | FSM workflow authoring guide for AI agents | When creating or editing workflows |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines and best practices | When you want to contribute workflows or improvements |
+| **[CHANGELOG.md](CHANGELOG.md)** | Version history and changes | When you want to see what's new |
 
 ---
 
-## 🚀 Getting Started Path
+## 🚀 Learning Path
 
-Follow this path for the smoothest onboarding:
+Follow this progression for the best learning experience:
 
-### 1. Installation (15 minutes)
-→ **[INSTALLATION.md](INSTALLATION.md)**
-- Clone repository
-- Configure the **remote** MCP server in your IDE
-- Verify installation works
+### Week 1: Basics
+1. **[README.md](README.md)** - Complete installation and create first workflow
+2. **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** - Learn the basic MCP tools
+3. **[workflows/samples/](workflows/samples/)** - Study example workflows
 
-### 2. First Workflow (30 minutes)
-→ **[README.md - Quick Start](README.md#quick-start)**
-- Ask AI to create a simple workflow
-- Review generated FSM files
-- Run your first workflow
-- Check execution status and logs
+### Week 2: Intermediate
+1. **[.cursorrules](.cursorrules)** - Study FSM authoring guide (state types, patterns)
+2. **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)** - Deep dive into all tools
+3. Build your own complex multi-step workflow
 
-### 3. Learn the Tools (1 hour)
-→ **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)**
-- Understand what each MCP tool does
-- Study example usage patterns
-- Practice with the sample workflows
-- Learn the typical workflow lifecycle
-
-### 4. Master FSM Authoring (2-3 hours)
-→ **[.cursorrules](.cursorrules)**
-- Learn state types (LLM, Tool, Verification)
-- Study environment normalization patterns
-- Understand variable system
-- Review failure recovery strategies
-- Study common pitfalls and solutions
-
-### 5. Explore Examples (1 hour)
-→ **[workflows/samples/](workflows/samples/)**
-- Review get-appointments workflow
-- Study download-documents workflow
-- Understand how patterns are applied
-- Adapt patterns to your use cases
-
-### 6. Build Complex Workflows (ongoing)
-→ **[CONTRIBUTING.md](CONTRIBUTING.md)**
-- Apply best practices
-- Test thoroughly
-- Share your workflows
-- Contribute improvements
+### Week 3: Advanced
+1. **[.cursorrules](.cursorrules)** - Master advanced patterns (failure recovery, callbacks)
+2. **[CONTRIBUTING.md](CONTRIBUTING.md)** - Learn contribution standards
+3. Build production-ready workflows and contribute back
 
 ---
 
-## 🎯 Quick Reference by Task
+## 🎯 Task-Based Navigation
 
-### "I want to install the MCP server"
-→ **[INSTALLATION.md](INSTALLATION.md)**
-- Platform-specific instructions (macOS, Windows, Linux)
-- IDE-specific setup (Cursor, Windsurf, Claude Desktop)
-- Troubleshooting common installation issues
+**"I want to get started"**
+→ [README.md](README.md) - Start-to-finish setup guide
 
-### "I want to create a workflow"
-1. **Generate:** Ask AI agent to create workflow ([README.md](README.md#quick-start))
-2. **Understand:** Review FSM authoring guide ([.cursorrules](.cursorrules))
-3. **Refine:** Apply best practices ([CONTRIBUTING.md](CONTRIBUTING.md#workflow-best-practices))
+**"I want to understand a specific tool"**
+→ [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) - Find your tool with examples
 
-### "I want to know what a tool does"
-→ **[TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)**
-- Find the tool name
-- Read parameters and examples
-- Copy and adapt the example
+**"I want to create a workflow"**
+→ [README.md - Usage](README.md#usage) for basics, then [.cursorrules](.cursorrules) for mastery
 
-### "My workflow isn't working"
-1. **Get artifacts:** Use `nen_artifacts` to download logs/recording
-3. **Review guide:** Check common pitfalls in [.cursorrules](.cursorrules)
-4. **Get help:** See troubleshooting in [INSTALLATION.md](INSTALLATION.md#troubleshooting)
+**"My workflow isn't working"**
+→ [.cursorrules - Common Pitfalls](.cursorrules) and [README.md - Troubleshooting](README.md#troubleshooting)
 
-### "The MCP server isn't connecting"
-→ **[INSTALLATION.md - Troubleshooting](INSTALLATION.md#troubleshooting)**
-- Verify installation steps
-- Check API key configuration
-- Restart IDE completely
-- Review error messages
-
-### "I want to contribute"
-→ **[CONTRIBUTING.md](CONTRIBUTING.md)**
-- Workflow development guidelines
-- Testing requirements
-- Submission process
-- Code standards
+**"I want to contribute"**
+→ [CONTRIBUTING.md](CONTRIBUTING.md) - Guidelines and standards
 
 ---
 
-## 📖 Document Details
+## 💡 Tips by Experience Level
 
-### README.md
-**Purpose:** Landing page and quick start guide
+### Beginners
+- Start with [README.md](README.md) - it covers everything you need to get running
+- Use the AI agent to generate your first workflows
+- Study [workflows/samples/](workflows/samples/) to see working patterns
+- Don't skip verification steps
 
-**Key sections:**
-- Quick start (6 steps from clone to first workflow)
-- Available MCP tools overview
-- Troubleshooting basics
-- What's next section
-- Resources and links
+### Intermediate Users
+- Master [.cursorrules](.cursorrules) - it's your authoring bible
+- Bookmark [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for quick reference
+- Test incrementally with small changes
+- Always use verification states after critical actions
 
-**Read this if:** You're new and want to get started quickly.
-
----
-
-### INSTALLATION.md
-**Purpose:** Comprehensive setup guide for all platforms
-
-**Key sections:**
-- Prerequisites
-- Step-by-step installation
-- IDE-specific configuration (Cursor, Windsurf, Claude Desktop)
-- Verification steps
-- Detailed troubleshooting
-- Advanced configuration
-
-**Read this if:** You need help installing or your MCP server isn't working.
-
----
-
-### TOOLS_REFERENCE.md
-**Purpose:** Complete reference for Nen MCP tools
-
-**Key sections:**
-- Tool overview table
-- Detailed docs for each tool
-  - `nen_create_workflow` - Generate workflows
-  - `nen_upload` - Deploy to platform
-  - `nen_run` - Execute workflows
-  - `nen_status` - Check execution status
-  - `nen_artifacts` - Download recordings
-  - `nen_list_runs` - View run history
-- Typical workflow patterns
-- Tips and best practices
-
-**Read this if:** You want to understand what each tool does and see examples.
-
----
-
-### .cursorrules
-**Purpose:** Comprehensive FSM authoring guide for AI agents
-
-**Key sections:**
-- Workflow structure
-- State types (LLM, Tool, Verification, CoordinateToolState, CallbackState)
-- Variable system
-- Failure recovery
-- Environment normalization pattern
-- FSM and orchestrator templates
-- Common pitfalls and solutions
-
-**Read this if:** You're creating or editing workflows and need to understand FSM patterns.
-
----
-
-### CONTRIBUTING.md
-**Purpose:** Guidelines for contributing workflows and documentation
-
-**Key sections:**
-- Development setup
-- Workflow best practices
-- Code standards
-- Testing workflows
-- Submission process
-- PR guidelines
-
-**Read this if:** You want to contribute a workflow or improve documentation.
-
----
-
-### CHANGELOG.md
-**Purpose:** Track changes and versions
-
-**Contents:**
-- Version history
-- Added features
-- Changed functionality
-- Planned enhancements
-
-**Read this if:** You want to see what's new or changed.
-
----
-
-## 💡 Tips for Success
-
-### For Beginners
-1. **Start with README.md** - Don't skip the quick start
-2. **Follow the order** - Installation → First workflow → Tools → FSM authoring
-3. **Use the AI agent** - Let it generate initial workflows
-4. **Study examples** - The samples/ directory has working patterns
-5. **Ask for help** - Reference docs are comprehensive
-
-### For Advanced Users
-1. **.cursorrules is your bible** - Master the FSM patterns
-2. **Test incrementally** - Small changes, frequent tests
-3. **Use verification states** - Wait for UI, don't rush
-4. **Watch the videos** - Artifacts show what actually happened
-5. **Contribute back** - Share your workflows and patterns
-
-### For Troubleshooters
-1. **Logs first** - Usually faster than downloading video
-2. **Check state transitions** - Review workflow_runner_flow.json
-3. **Compare successful runs** - What changed?
-4. **Read error messages carefully** - They're usually accurate
-5. **Restart your IDE** - Environment-variable changes require a full restart
+### Advanced Users
+- Deep dive into [.cursorrules](.cursorrules) advanced patterns
+- Review [CONTRIBUTING.md](CONTRIBUTING.md) for best practices
+- Contribute your workflows back to help others
+- Optimize for resilience and error handling
 
 ---
 
 ## 🔗 External Resources
 
-### Model Context Protocol (MCP)
-- Official spec: https://modelcontextprotocol.io
-- Learn how MCP servers work
-- Understand the protocol
+**Model Context Protocol (MCP)**
+- https://modelcontextprotocol.io - Official specification
 
-### NenAI Platform
-- Contact your customer engineer for:
-  - API keys
-  - Organization setup
-  - Platform access
-  - Technical support
+**NenAI Platform**
+- Contact your customer engineer for API keys, support, and platform access
 
 ---
 
-## 📝 Documentation Feedback
+## 📝 Feedback
 
 Found an issue or have a suggestion?
 - Open an issue on GitHub
-- Submit a PR to improve docs
-- Contact your customer engineer
-
----
-
-## 🎓 Learning Path Summary
-
-```
-Week 1: Basics
-├─ Day 1-2: Install and verify setup
-├─ Day 3-4: Create first simple workflow
-└─ Day 5-7: Run, monitor, and debug
-
-Week 2: Intermediate
-├─ Day 1-3: Study FSM authoring guide
-├─ Day 4-5: Create complex multi-step workflow
-└─ Day 6-7: Implement error handling and verification
-
-Week 3: Advanced
-├─ Day 1-3: Master all state types
-├─ Day 4-5: Build production-ready workflows
-└─ Day 6-7: Contribute to samples
-
-Ongoing: Expert
-├─ Create workflow libraries
-├─ Optimize performance
-├─ Share patterns with community
-└─ Help others learn
-```
-
----
-
-Happy automating! 🤖
+- Submit a pull request
+- Contact your NenAI customer engineer
