@@ -1,0 +1,175 @@
+---
+description: "Core NenAI workflow authoring principles and SDK quick reference"
+alwaysApply: true
+---
+
+# NenAI Python Workflow Authoring - Core Principles
+
+You are an AI assistant helping to author NenAI computer use workflows using the **Python SDK** approach.
+
+## Workflow Structure
+
+Python-based workflows use the `nen.workflow` SDK.
+
+**File structure:**
+```
+workflows/my_workflows/my-workflow/
+└── workflow.py    # Python handler function
+```
+
+**Basic template:**
+```python
+"""
+Workflow: [Name]
+
+Description of what this workflow does.
+"""
+from nen.workflow import agent, validate, extract, keyboard, mouse
+
+
+def handler(payload: dict) -> dict:
+    """
+    Main workflow entry point.
+    
+    Args:
+        payload: Input parameters
+    
+    Returns:
+        dict with at minimum: {"success": bool}
+    """
+    # Get inputs
+    url = payload.get("WEBSITE_URL", "https://example.com")
+    
+    # Workflow logic
+    agent(f"Open Firefox and navigate to {url}")
+    
+    if not validate("Is the website loaded?"):
+        return {"success": False, "error": "Failed to load website"}
+    
+    # Return results
+    return {"success": True}
+```
+
+## SDK Primitives Quick Reference
+
+### agent(description, max_iterations=10)
+Execute natural language action using VLM.
+```python
+agent("Click the submit button")
+agent("Fill in the entire form", max_iterations=20)
+```
+
+### validate(question, timeout=10)
+Check UI state with yes/no question.
+```python
+if validate("Is the login form visible?"):
+    # Proceed
+    pass
+```
+
+### extract(query, schema)
+Extract structured data using JSON schema.
+```python
+data = extract(
+    "What is the account balance?",
+    schema={
+        "type": "object",
+        "properties": {"balance": {"type": "number"}},
+        "required": ["balance"]
+    }
+)
+```
+
+### mouse
+Direct mouse control (no VLM).
+```python
+from nen.workflow import mouse
+
+mouse.click_at(500, 300)
+mouse.move(400, 200)
+```
+
+### keyboard
+Direct keyboard control (no VLM).
+```python
+from nen.workflow import keyboard
+
+keyboard.type("hello@example.com")
+keyboard.press("Return")
+keyboard.hotkey("ctrl", "c")  # Copy
+```
+
+## Common Patterns
+
+### Browser Automation
+```python
+agent("Open Firefox")
+if not validate("Is Firefox open?", timeout=10):
+    return {"success": False, "error": "Failed to open browser"}
+
+agent(f"Navigate to {url}")
+if not validate("Is page loaded?", timeout=20):
+    return {"success": False, "error": "Failed to load page"}
+```
+
+### Login Workflow
+```python
+agent("Navigate to login page")
+if not validate("Is login form visible?"):
+    return {"success": False, "error": "Login page not found"}
+
+agent("Click username field")
+keyboard.type(username)
+
+agent("Click password field")
+keyboard.type(password, interval=0.01)
+
+agent("Click login button")
+
+if validate("Is dashboard visible?", timeout=20):
+    return {"success": True}
+```
+
+### Data Extraction
+```python
+if not validate("Is the data table visible?"):
+    return {"success": False, "error": "Table not found"}
+
+data = extract(
+    "Extract all rows from the table",
+    schema={
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "value": {"type": "number"}
+            }
+        }
+    }
+)
+
+return {"success": True, "data": data}
+```
+
+## Best Practices
+
+1. **Be specific in agent() descriptions** - "Click the blue 'Submit' button in the bottom right" not "Click submit"
+
+2. **Validate before extracting** - Always check UI state before data extraction
+
+3. **Return structured results** - Include `{"success": bool}` at minimum
+
+4. **Use sensible defaults** - `payload.get("VAR", "default")` for optional parameters
+
+5. **Don't log sensitive data** - Redact passwords, tokens, and credentials
+
+## For More Details
+
+When working on complex workflows or need detailed guidance:
+- **@workflow-guide-comprehensive** - Architecture, advanced patterns, debugging
+- **@workflow-reference-detailed** - Complete SDK reference with examples
+
+---
+
+**Note:** This project uses the Python SDK approach for workflows, NOT the FSM (Finite State Machine) JSON approach.

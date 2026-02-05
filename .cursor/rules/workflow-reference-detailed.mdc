@@ -1,0 +1,876 @@
+---
+description: "Detailed SDK reference with complete function signatures, parameters, JSON schema examples, and troubleshooting guides"
+alwaysApply: false
+---
+
+# CUP Workflow Quick Reference
+
+Quick reference for `nen.workflow` SDK primitives and common patterns.
+
+## Table of Contents
+
+- [Workflow Structure](#workflow-structure)
+- [SDK Primitives](#sdk-primitives)
+- [Common Patterns](#common-patterns)
+- [Error Handling](#error-handling)
+- [Logging](#logging)
+- [JSON Schema Examples](#json-schema-examples)
+
+---
+
+## Workflow Structure
+
+### Basic Template
+
+```python
+"""
+Workflow: [Name]
+
+Description of what this workflow does.
+"""
+from nen.workflow import agent, validate, extract, keyboard, mouse
+
+
+def handler(payload: dict) -> dict:
+    """
+    Main workflow entry point.
+    
+    Args:
+        payload: Input parameters
+    
+    Returns:
+        dict with at minimum: {"success": bool}
+    """
+    # Get inputs
+    var = payload.get("VAR_NAME", "default")
+    
+    # Workflow logic
+    agent("Do something")
+    
+    # Return results
+    return {"success": True}
+```
+
+### Payload Access
+
+```python
+# Optional with default
+url = payload.get("WEBSITE_URL", "https://example.com")
+
+# Required (raises KeyError if missing)
+name = payload["PATIENT_NAME"]
+
+# With validation
+if "REQUIRED_VAR" not in payload:
+    return {"success": False, "error": "REQUIRED_VAR missing"}
+```
+
+### Return Structure
+
+```python
+# Success
+return {
+    "success": True,
+    "data": result,
+    "message": "Optional success message"
+}
+
+# Failure
+return {
+    "success": False,
+    "error": "Error description",
+    "details": {"step": "authentication", "reason": "Invalid credentials"}
+}
+```
+
+---
+
+## SDK Primitives
+
+### agent()
+
+Execute natural language action using VLM.
+
+```python
+from nen.workflow import agent
+
+# Basic usage
+agent("Click the submit button")
+
+# With max iterations
+agent("Fill in the entire form", max_iterations=20)
+
+# With variable
+url = payload.get("URL")
+agent(f"Navigate to {url}")
+```
+
+**Parameters:**
+- `description` (str): Natural language description
+- `max_iterations` (int): Max LLM turns (default: 10)
+
+**Returns:** `dict` with `success`, `messages`, optional `error`
+
+**Raises:** `WorkflowError` if action fails
+
+**When to use:**
+- Element position unknown
+- Dynamic UI
+- Complex multi-step sequences
+
+---
+
+### validate()
+
+Check UI state with yes/no question.
+
+```python
+from nen.workflow import validate
+
+# Basic check
+if validate("Is the login form visible?"):
+    # Proceed with login
+    pass
+
+# With timeout (waits up to timeout for condition)
+if validate("Is the dashboard loaded?", timeout=30):
+    # Dashboard is ready
+    pass
+
+# Negative check
+if not validate("Is there an error message?"):
+    # No error, continue
+    pass
+```
+
+**Parameters:**
+- `question` (str): Yes/no question about screen
+- `timeout` (int): Max seconds to wait (default: 10)
+
+**Returns:** `bool` - True if condition met, False otherwise
+
+**Raises:** `RPCError` if communication fails
+
+**When to use:**
+- After navigation (page loaded?)
+- After actions (success/failure?)
+- Before data extraction (data visible?)
+- State transitions (tab active?)
+
+---
+
+### extract()
+
+Extract structured data using JSON schema.
+
+```python
+from nen.workflow import extract
+
+# Single value
+result = extract(
+    "What is the account balance?",
+    schema={
+        "type": "object",
+        "properties": {"balance": {"type": "number"}},
+        "required": ["balance"]
+    }
+)
+balance = result["balance"]
+
+# List of items
+items = extract(
+    "Extract all product names and prices",
+    schema={
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "price": {"type": "number"}
+            }
+        }
+    }
+)
+```
+
+**Parameters:**
+- `query` (str): Description of what to extract
+- `schema` (dict): JSON Schema for output structure
+
+**Returns:** `dict` or `list` matching schema
+
+**Raises:** `WorkflowError` if extraction fails
+
+**When to use:**
+- Reading table data
+- Extracting form values
+- Getting specific information from UI
+
+---
+
+### mouse
+
+Direct mouse control (no VLM).
+
+```python
+from nen.workflow import mouse
+
+# Click at coordinates
+mouse.click_at(500, 300)
+
+# Right click
+mouse.click_at(500, 300, button="right")
+
+# Move cursor
+mouse.move(400, 200)
+```
+
+**Methods:**
+- `click_at(x, y, button="left")` - Click at coordinates
+  - `button`: "left", "right", or "middle"
+- `move(x, y)` - Move cursor
+
+**Coordinates:** Origin (0,0) at top-left, X increases right, Y increases down
+
+**When to use:**
+- Known stable coordinates
+- Performance critical
+- After agent() finds element position
+
+---
+
+### keyboard
+
+Direct keyboard control (no VLM).
+
+```python
+from nen.workflow import keyboard
+
+# Type text
+keyboard.type("hello@example.com")
+
+# Type with custom interval
+keyboard.type("slow typing", interval=0.1)
+
+# Press single key
+keyboard.press("Return")
+keyboard.press("Tab")
+keyboard.press("Escape")
+
+# Keyboard shortcuts
+keyboard.hotkey("ctrl", "c")  # Copy
+keyboard.hotkey("ctrl", "v")  # Paste
+keyboard.hotkey("ctrl", "shift", "s")  # Save As
+```
+
+**Methods:**
+- `type(text, interval=0.02)` - Type text character by character
+- `press(key)` - Press single key
+- `hotkey(*keys)` - Press key combination
+
+**Common Keys:**
+- Enter: "Return" or "Enter"
+- Arrows: "Up", "Down", "Left", "Right"
+- Function: "F1" through "F12"
+- Modifiers: "ctrl", "alt", "shift", "super"
+- Navigation: "Home", "End", "Page_Up", "Page_Down"
+
+**When to use:**
+- Typing text (faster than agent)
+- Keyboard shortcuts
+- Navigation keys
+
+---
+
+## Common Patterns
+
+### Browser Automation
+
+```python
+def handler(payload: dict) -> dict:
+    url = payload.get("URL", "https://example.com")
+    
+    # Open and navigate
+    agent("Open Firefox")
+    if not validate("Is Firefox open?", timeout=10):
+        return {"success": False, "error": "Failed to open browser"}
+    
+    agent(f"Navigate to {url}")
+    if not validate(f"Is {url} loaded?", timeout=20):
+        return {"success": False, "error": "Failed to load page"}
+    
+    # Continue workflow...
+    return {"success": True}
+```
+
+### Form Filling
+
+```python
+def handler(payload: dict) -> dict:
+    # Navigate to form
+    agent("Navigate to contact form")
+    if not validate("Is the form visible?"):
+        return {"success": False, "error": "Form not found"}
+    
+    # Fill fields
+    agent("Click the name field")
+    keyboard.type(payload.get("NAME"))
+    
+    agent("Click the email field")
+    keyboard.type(payload.get("EMAIL"))
+    
+    # Submit
+    agent("Click submit button")
+    
+    # Verify
+    if validate("Is there a success message?", timeout=10):
+        return {"success": True}
+    else:
+        return {"success": False, "error": "Submission failed"}
+```
+
+### Data Extraction
+
+```python
+def handler(payload: dict) -> dict:
+    # Navigate to data
+    agent("Navigate to data page")
+    if not validate("Is the data table visible?"):
+        return {"success": False, "error": "Table not found"}
+    
+    # Extract
+    data = extract(
+        "Extract all rows from the table",
+        schema={
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "value": {"type": "number"}
+                },
+                "required": ["name", "value"]
+            }
+        }
+    )
+    
+    return {"success": True, "data": data}
+```
+
+### Login Workflow
+
+```python
+def handler(payload: dict) -> dict:
+    username = payload.get("USERNAME")
+    password = payload.get("PASSWORD")
+    
+    # Navigate
+    agent("Navigate to login page")
+    if not validate("Is login form visible?"):
+        return {"success": False, "error": "Login page not found"}
+    
+    # Enter credentials
+    agent("Click username field")
+    keyboard.type(username)
+    
+    agent("Click password field")
+    keyboard.type(password, interval=0.01)  # Faster typing for passwords
+    
+    # Submit
+    agent("Click login button")
+    
+    # Verify
+    if validate("Is dashboard visible?", timeout=20):
+        return {"success": True}
+    elif validate("Is there an error message?"):
+        return {"success": False, "error": "Invalid credentials"}
+    else:
+        return {"success": False, "error": "Login result unclear"}
+```
+
+### Multi-Step with Checkpoints
+
+```python
+import logging
+
+def handler(payload: dict) -> dict:
+    # Step 1: Authenticate
+    logging.info("Step 1: Authenticating")
+    if not authenticate(payload):
+        return {"success": False, "error": "Authentication failed"}
+    
+    # Step 2: Navigate
+    logging.info("Step 2: Navigating")
+    if not navigate_to_target():
+        return {"success": False, "error": "Navigation failed"}
+    
+    # Step 3: Extract
+    logging.info("Step 3: Extracting data")
+    try:
+        data = extract_data()
+    except WorkflowError as e:
+        return {"success": False, "error": f"Extraction failed: {e}"}
+    
+    logging.info("Workflow completed")
+    return {"success": True, "data": data}
+```
+
+---
+
+## Error Handling
+
+### Basic Try/Except
+
+```python
+from nen.workflow import agent, WorkflowError
+
+try:
+    agent("Click submit")
+    return {"success": True}
+except WorkflowError as e:
+    return {"success": False, "error": str(e)}
+```
+
+### Retry Pattern
+
+```python
+import time
+
+max_retries = 3
+for attempt in range(max_retries):
+    try:
+        agent("Click submit")
+        return {"success": True}
+    except WorkflowError as e:
+        if attempt < max_retries - 1:
+            time.sleep(2)
+            continue
+        return {"success": False, "error": f"Failed after {max_retries} attempts: {e}"}
+```
+
+### Partial Success
+
+```python
+def handler(payload: dict) -> dict:
+    results = []
+    errors = []
+    
+    items = payload.get("ITEMS", [])
+    
+    for item in items:
+        try:
+            result = process_item(item)
+            results.append({"item": item, "result": result})
+        except WorkflowError as e:
+            errors.append({"item": item, "error": str(e)})
+    
+    return {
+        "success": len(results) > 0,
+        "results": results,
+        "errors": errors,
+        "summary": {
+            "total": len(items),
+            "succeeded": len(results),
+            "failed": len(errors)
+        }
+    }
+```
+
+### Checkpoint Pattern
+
+```python
+def handler(payload: dict) -> dict:
+    checkpoint = "start"
+    
+    try:
+        checkpoint = "authentication"
+        authenticate()
+        
+        checkpoint = "navigation"
+        navigate()
+        
+        checkpoint = "extraction"
+        data = extract_data()
+        
+        return {"success": True, "data": data}
+        
+    except WorkflowError as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "failed_at": checkpoint
+        }
+```
+
+---
+
+## Logging
+
+### Simple Logging (print)
+
+```python
+def handler(payload: dict) -> dict:
+    print("Starting workflow")
+    print(f"Processing: {payload.get('NAME')}")
+    
+    agent("Do something")
+    print("Action completed")
+    
+    return {"success": True}
+```
+
+Output:
+```json
+{"timestamp":"...","level":"INFO","message":"Starting workflow"}
+{"timestamp":"...","level":"INFO","message":"Processing: John Doe"}
+{"timestamp":"...","level":"INFO","message":"Action completed"}
+```
+
+### Structured Logging (logging.info)
+
+```python
+import logging
+
+def handler(payload: dict) -> dict:
+    logging.info("Workflow started", extra={
+        "workflow": "example",
+        "version": "1.0.0",
+        "patient": payload.get("PATIENT_NAME")
+    })
+    
+    result = extract("Get data", schema=schema)
+    
+    logging.info("Data extracted", extra={
+        "record_count": len(result),
+        "result": result
+    })
+    
+    return {"success": True, "data": result}
+```
+
+Output:
+```json
+{"timestamp":"...","level":"INFO","message":"Workflow started","workflow":"example","version":"1.0.0","patient":"John Doe"}
+{"timestamp":"...","level":"INFO","message":"Data extracted","record_count":5,"result":[...]}
+```
+
+### Log Levels
+
+```python
+import logging
+
+logging.debug("Debug information")
+logging.info("General information")
+logging.warning("Warning message")
+logging.error("Error occurred")
+```
+
+### Redacting Sensitive Data
+
+```python
+import logging
+
+def handler(payload: dict) -> dict:
+    password = payload.get("PASSWORD")
+    
+    # BAD - logs password
+    print(f"Password: {password}")  # ❌
+    
+    # GOOD - redact in logs
+    logging.info("Authenticating", extra={
+        "username": payload.get("USERNAME"),
+        "password": "***REDACTED***"  # ✅
+    })
+    
+    # Use password without logging it
+    keyboard.type(password)
+```
+
+---
+
+## JSON Schema Examples
+
+### Single Value
+
+```python
+# String
+schema = {
+    "type": "object",
+    "properties": {
+        "email": {"type": "string"}
+    },
+    "required": ["email"]
+}
+
+# Number
+schema = {
+    "type": "object",
+    "properties": {
+        "balance": {"type": "number"}
+    },
+    "required": ["balance"]
+}
+
+# Integer
+schema = {
+    "type": "object",
+    "properties": {
+        "count": {"type": "integer"}
+    },
+    "required": ["count"]
+}
+
+# Boolean
+schema = {
+    "type": "object",
+    "properties": {
+        "is_active": {"type": "boolean"}
+    },
+    "required": ["is_active"]
+}
+```
+
+### Multiple Fields
+
+```python
+schema = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "age": {"type": "integer"},
+        "email": {"type": "string"},
+        "active": {"type": "boolean"}
+    },
+    "required": ["name", "email"]  # age and active are optional
+}
+```
+
+### Array of Strings
+
+```python
+schema = {
+    "type": "array",
+    "items": {"type": "string"}
+}
+
+# Example result: ["item1", "item2", "item3"]
+```
+
+### Array of Objects
+
+```python
+schema = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "product": {"type": "string"},
+            "price": {"type": "number"},
+            "in_stock": {"type": "boolean"}
+        },
+        "required": ["product", "price"]
+    }
+}
+
+# Example result:
+# [
+#   {"product": "Widget", "price": 19.99, "in_stock": true},
+#   {"product": "Gadget", "price": 29.99}
+# ]
+```
+
+### Nested Object
+
+```python
+schema = {
+    "type": "object",
+    "properties": {
+        "user": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "contact": {
+                    "type": "object",
+                    "properties": {
+                        "email": {"type": "string"},
+                        "phone": {"type": "string"}
+                    }
+                }
+            }
+        }
+    }
+}
+
+# Example result:
+# {
+#   "user": {
+#     "name": "John Doe",
+#     "contact": {
+#       "email": "john@example.com",
+#       "phone": "555-1234"
+#     }
+#   }
+# }
+```
+
+### Optional Fields
+
+```python
+schema = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "email": {"type": "string"},
+        "phone": {"type": "string"},
+        "notes": {"type": "string"}
+    },
+    "required": ["name", "email"]  # phone and notes are optional
+}
+
+# phone and notes may or may not be present in result
+```
+
+### Table Extraction
+
+```python
+schema = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "patient_name": {"type": "string"},
+            "mrn": {"type": "string"},
+            "dob": {"type": "string"},
+            "last_visit": {"type": "string"}
+        },
+        "required": ["patient_name", "mrn"]
+    }
+}
+
+# Extracts table as list of objects
+```
+
+### Conditional Fields
+
+```python
+schema = {
+    "type": "object",
+    "properties": {
+        "status": {"type": "string"},
+        "data": {"type": "object"},
+        "error_message": {"type": "string"}
+    },
+    "required": ["status"]
+}
+
+# Check if error_message exists:
+result = extract("Get status", schema=schema)
+if "error_message" in result:
+    return {"success": False, "error": result["error_message"]}
+```
+
+---
+
+## Decision Trees
+
+### Choosing Which Primitive
+
+```
+Need to interact with UI?
+│
+├─ Just checking state? → validate()
+│
+├─ Extracting data? → extract()
+│
+├─ Know exact coordinates?
+│  ├─ Yes → mouse.click_at() or keyboard
+│  └─ No → agent()
+│
+└─ Complex multi-step?
+   └─ agent() with clear description
+```
+
+### Choosing Timeout Values
+
+```
+Operation Type          | Timeout
+-----------------------|----------
+Button visibility      | 5s
+Page load             | 30s
+Form submission       | 20s
+File download         | 60-120s
+Long async operation  | 180s+
+```
+
+### Choosing Max Iterations
+
+```
+Task Complexity        | Max Iterations
+----------------------|----------------
+Simple click          | 3-5
+Form filling          | 10-15
+Complex sequence      | 20-30
+Loops/iteration       | 40-60
+```
+
+---
+
+## Quick Troubleshooting
+
+### Agent Fails
+
+```python
+# Problem: "Element not found"
+# Solution: Be more specific
+agent("Click the submit button")  # Vague
+agent("Click the blue 'Submit' button at the bottom right")  # Specific
+
+# Problem: Max iterations reached
+# Solution: Increase max_iterations or break into steps
+agent("Fill entire form", max_iterations=20)
+```
+
+### Validate Returns False
+
+```python
+# Problem: Question too vague
+# Solution: Be specific about what to check
+validate("Is page loaded?")  # Vague
+validate("Is the dashboard visible with the patient list table?")  # Specific
+
+# Problem: Timing issue
+# Solution: Increase timeout
+validate("Is data visible?", timeout=30)
+```
+
+### Extract Fails
+
+```python
+# Problem: Data not visible
+# Solution: Validate before extracting
+if not validate("Is the table visible?"):
+    return {"success": False, "error": "Table not found"}
+data = extract("Get table data", schema=schema)
+
+# Problem: Schema mismatch
+# Solution: Make fields optional or adjust schema
+schema = {
+    "type": "object",
+    "properties": {"field": {"type": "string"}},
+    "required": []  # Make all fields optional to see what's available
+}
+```
+
+---
+
+## Additional Resources
+
+- **Full Guide:** `docs/workflows/WORKFLOW_GUIDE.md`
+- **SDK Reference:** `python/nen/workflow/README.md`
+- **Example Workflow:** `workflows/demo/sdk-primitives-test/workflow.py`
+- **Publishing Guide:** `docs/guides/WORKFLOW_PUBLISHING.md`
+
+---
+
+**Last Updated:** 2026-02-04  
+**Version:** 1.0.0

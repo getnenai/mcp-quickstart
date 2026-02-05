@@ -1,0 +1,241 @@
+# Cursor Rules for NenAI Workflows
+
+This directory contains Cursor rules for authoring NenAI workflows using the Python SDK approach.
+
+## Rule Structure Overview
+
+This project uses modern `.mdc` (Markdown with frontmatter) files for intelligent context management:
+
+- **Always-Apply Rules** - Core guidance loaded in every session
+- **File-Pattern Rules** - Auto-load when editing specific file types
+- **Agent-Decided Rules** - AI loads based on task complexity
+
+## Available Rules
+
+### workflow-core.mdc
+**Always applies | ~170 lines**
+
+Core NenAI workflow authoring principles loaded in every session.
+
+**Contains:**
+- Basic workflow structure and handler template
+- SDK primitives quick reference (agent, validate, extract, mouse, keyboard)
+- Common patterns (browser automation, login, data extraction)
+- Best practices checklist
+- References to detailed guides
+
+**When it applies:** Automatically in all sessions
+
+---
+
+### workflow-python-sdk.mdc
+**File-pattern: `workflows/**/*.py` | ~300 lines**
+
+Python-specific SDK guidance that auto-loads when editing workflow.py files.
+
+**Contains:**
+- Handler function patterns
+- Payload access patterns (optional, required, type checking)
+- Return structure conventions
+- Error handling with try/except
+- Logging best practices
+- Variable naming conventions
+- Common pitfalls to avoid
+
+**When it applies:** Automatically when editing any .py file in workflows/ directory
+
+---
+
+### workflow-guide-comprehensive.mdc
+**Agent-decided | 2,542 lines**
+
+Comprehensive guide for complex workflow authoring tasks.
+
+**Contains:**
+- Complete SDK primitives documentation
+- Execution environment architecture
+- Advanced patterns and examples
+- Performance considerations
+- Debugging strategies
+- AI agent guidance for code generation
+
+**When it applies:** AI loads this when:
+- Working on complex workflow logic
+- Need understanding of execution environment
+- Debugging advanced issues
+- Generating workflow code programmatically
+
+**How to reference:** `@workflow-guide-comprehensive`
+
+---
+
+### workflow-reference-detailed.mdc
+**Agent-decided | 872 lines**
+
+Detailed SDK reference with function signatures and examples.
+
+**Contains:**
+- Complete function signatures with parameters
+- JSON schema examples for all patterns
+- Decision trees (choosing primitives, timeouts, max_iterations)
+- Quick troubleshooting guide
+- Code snippets for common scenarios
+
+**When it applies:** AI loads this when:
+- Need specific SDK function syntax
+- Looking up JSON schema patterns
+- Quick reference for parameters
+- Troubleshooting specific errors
+
+**How to reference:** `@workflow-reference-detailed`
+
+---
+
+### mcp-platform-tools.mdc
+**Agent-decided | 326 lines**
+
+NenAI MCP tool usage for platform operations.
+
+**Contains:**
+- When to use MCP tools vs direct file editing
+- Tool-specific documentation (nen_run, get_run_logs, etc.)
+- Decision matrix for tool selection
+- Deployment and execution workflows
+- Debugging with platform logs
+
+**When it applies:** AI loads this when:
+- User mentions deployment, running, or testing workflows
+- Debugging failed workflow executions
+- Working with NenAI platform operations
+- Need to list or manage deployed workflows
+
+**How to reference:** `@mcp-platform-tools`
+
+---
+
+## Context Loading Strategy
+
+### Automatic Context (Always Loaded)
+- `workflow-core.mdc` (~170 lines)
+
+**Total: ~170 lines baseline context**
+
+### Automatic File-Based Context
+When editing `workflows/**/*.py`:
+- `workflow-core.mdc` + `workflow-python-sdk.mdc`
+
+**Total: ~470 lines when editing workflows**
+
+### On-Demand Context (AI-Decided)
+AI intelligently loads additional guides based on task:
+- Complex authoring → `workflow-guide-comprehensive.mdc` (+2,542 lines)
+- Syntax lookup → `workflow-reference-detailed.mdc` (+872 lines)
+- Platform operations → `mcp-platform-tools.mdc` (+326 lines)
+
+## How to Use These Rules
+
+### For Simple Questions
+Just ask - the always-apply core rules provide enough context:
+```
+"How do I validate a page loaded?"
+```
+
+### For Workflow Editing
+Open the workflow.py file and both core + python-sdk rules load automatically:
+```
+Open: workflows/my_workflows/login/workflow.py
+Auto-loads: workflow-core.mdc + workflow-python-sdk.mdc
+```
+
+### For Complex Tasks
+Mention the comprehensive guide explicitly or let AI decide:
+```
+"I need to understand the execution environment" → AI loads comprehensive guide
+"Show me JSON schema examples" → AI loads detailed reference
+"How do I deploy my workflow?" → AI loads MCP platform tools
+```
+
+### Manual References
+You can explicitly reference rules using @-mentions:
+```
+"@workflow-guide-comprehensive explain the agent primitive in detail"
+"@workflow-reference-detailed show me table extraction schema"
+"@mcp-platform-tools how do I debug a failed run?"
+```
+
+## Workflow Approaches
+
+### Python SDK Approach (Primary)
+- Uses Python with `nen.workflow` SDK
+- VLM-based automation with natural language descriptions
+- Direct computer control (mouse, keyboard)
+- Structured data extraction with JSON schemas
+- File: `workflow.py` with `handler(payload)` function
+
+**Documentation:** This directory's .mdc rules
+
+### FSM Approach (Alternative)
+- Uses JSON-based Finite State Machine definitions
+- State-based workflow with transitions
+- LLMState, ToolState, VerificationState, etc.
+- Files: `orchestrator.json` and `workflow.json`
+
+**Documentation:** See legacy `.cursorrules` file (being deprecated)
+
+## When to Use Which Approach
+
+Use **Python SDK** approach when:
+- Complex programmatic logic required
+- Need custom error handling and retry logic
+- Building reusable helper functions
+- Prefer imperative programming style
+- Need full Python ecosystem access
+
+Use **FSM** approach when:
+- Workflow is primarily sequential state transitions
+- Need visual workflow representation
+- Want declarative workflow definition
+- Building resumable workflows with checkpoints
+- Prefer configuration over code
+
+## Benefits of Modern Rule Structure
+
+This project uses modern `.mdc` rules with intelligent context management:
+- `workflow-core.mdc` (always-on, ~170 lines)
+- `workflow-python-sdk.mdc` (file-pattern)
+- `workflow-guide-comprehensive.mdc` (on-demand)
+- `workflow-reference-detailed.mdc` (on-demand)
+- `mcp-platform-tools.mdc` (on-demand)
+
+**Advantages:**
+- Minimal baseline context (~170 lines vs traditional always-on approach)
+- Intelligent loading of detailed guides based on task complexity
+- File-aware Python SDK guidance for workflow files
+- Better organization and maintainability
+
+## Key Features
+
+1. **Minimal Context Pollution** - Only ~170 lines always loaded
+2. **Intelligent Scaling** - Detailed guides load only when needed
+3. **File-Aware** - Python SDK tips auto-load for .py files
+4. **Fast Queries** - Simple questions get simple context
+5. **Deep Dives** - Complex tasks get comprehensive documentation
+6. **Team-Ready** - Version-controlled, well-organized rules
+
+## Rule File Locations
+
+All rules in `.cursor/rules/`:
+```
+.cursor/rules/
+├── README.md (this file)
+├── workflow-core.mdc (always-apply)
+├── workflow-python-sdk.mdc (file-pattern: workflows/**/*.py)
+├── workflow-guide-comprehensive.mdc (agent-decided)
+├── workflow-reference-detailed.mdc (agent-decided)
+└── mcp-platform-tools.mdc (agent-decided)
+```
+
+---
+
+**Last Updated:** 2026-02-04  
+**Version:** 2.0.0
