@@ -23,7 +23,7 @@ cd mcp-quickstart
 
 Click the link below to automatically install the NenAI Platform MCP Server:
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=NenAI%20Platform&config=eyJ1cmwiOiJodHRwczovL21jcC5nZXRuZW4uYWkvdjEifQ%3D%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=NenAI%20Platform&config=eyJ1cmwiOiJodHRwczovL21jcC5nZXRuZW4uYWkvdjEiLCJoZWFkZXJzIjp7IngtYXBpLWtleSI6IllPVVJfTkVOQUlfQVBJX0tFWSJ9fQ%3D%3D)
 
 This will automatically add the server configuration to your `mcp.json` file.
 
