@@ -74,6 +74,37 @@ def run(input: Input) -> Output:
     return Output(success=True)
 ```
 
+## Python Syntax Rules
+
+**CRITICAL: Use standard Python docstring syntax.**
+
+Module-level docstrings MUST follow these rules:
+
+✅ **CORRECT - Standard Python docstrings:**
+
+```python
+"""
+Workflow: EzyVet Login Automation
+
+Automates login to the EzyVet trial portal using provided credentials.
+"""
+```
+
+❌ **WRONG - Do NOT escape characters in docstrings:**
+
+```python
+# This will cause syntax errors!
+"""\nWorkflow: EzyVet Login Automation\n\nDescription here.\n\"""
+```
+
+**Rules:**
+- Opening `"""` on its own line OR with first line of text
+- Content starts on next line (no `\n` escape sequences)
+- Closing `"""` on its own line (no backslash before quotes)
+- Standard Python multi-line string syntax
+
+**This is fundamental Python syntax, not NenAI-specific. Always generate valid Python code.**
+
 ## CRITICAL: Validation Rule
 
 **After ANY change to workflow.py, you MUST call `nen_validate()`:**

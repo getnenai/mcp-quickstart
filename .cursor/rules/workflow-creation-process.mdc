@@ -77,6 +77,12 @@ Before validating and deploying your workflow, verify these common issues:
 - [ ] Agent descriptions are specific: "Click the blue 'Submit' button" not "Click submit"
 - [ ] Sensitive data (passwords, tokens) not logged
 
+### ✅ Python Syntax
+- [ ] **Docstrings use standard Python format** (no `\n` or `\"""` escaping)
+- [ ] Module docstring opens with `"""` (unescaped)
+- [ ] Module docstring closes with `"""` (unescaped, no backslash)
+- [ ] No escaped newlines in docstrings
+
 **If any checklist item fails, fix it before proceeding to validation.**
 
 ## Step 2: Validate the Workflow
@@ -352,6 +358,34 @@ When editing, updating, or fixing a workflow:
 - After making suggested changes
 
 ## Common Pitfalls to Avoid
+
+### 0. Malformed Docstrings ❌
+
+**Problem:** Generating docstrings with escaped characters
+
+**Symptom:**
+```python
+# Invalid Python syntax - will not parse
+"""\nWorkflow: Name\n\"""
+```
+
+**Solution:** Use standard Python docstring syntax
+
+```python
+# ❌ WRONG - escaped characters
+"""\nWorkflow: EzyVet Login Automation\n\nDescription here.\n\"""
+
+# ✅ CORRECT - standard Python docstrings
+"""
+Workflow: EzyVet Login Automation
+
+Automates login to the EzyVet trial portal using provided credentials.
+"""
+```
+
+**This is fundamental Python syntax, not NenAI-specific. Always generate valid Python code.**
+
+---
 
 ### 1. Platform-Specific Keyboard Commands ❌
 
