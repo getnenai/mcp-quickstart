@@ -21,9 +21,11 @@ cd mcp-quickstart
 
 ### Step 2: Configure Cursor
 
-Click the link below to automatically install the NenAI Platform MCP Server:
+Click the button below to automatically install the NenAI Platform MCP Server:
 
-[Install NenAI Platform MCP Server](cursor://anysphere.cursor-deeplink/mcp/install?config=eyJOZW5BSSBQbGF0Zm9ybSI6eyJ1cmwiOiJodHRwczovL21jcC5nZXRuZW4uYWkvdjEifX0=)
+<a href="cursor://anysphere.cursor-deeplink/mcp/install?name=NenAI-Platform&config=eyJ1cmwiOiJodHRwczovL21jcC5nZXRuZW4uYWkvdjEifQ==">
+  <img src="https://cursor.com/deeplink/mcp-install-dark.png" alt="Add NenAI Platform MCP server to Cursor" height="32" />
+</a>
 
 This will automatically add the server configuration to your `mcp.json` file.
 
