@@ -5,14 +5,13 @@ All notable changes to the NenAI MCP Quickstart repository.
 ## [1.0.0] - 2026-01-14
 
 ### Added
-- **Complete installation guide** (`INSTALLATION.md`)
-  - Step-by-step setup for Cursor, Windsurf, and Claude Desktop
+- **Complete installation guide** (in `README.md`)
+  - Step-by-step setup for Cursor
   - Detailed troubleshooting section
   - Advanced configuration options
-  - Platform-specific instructions (macOS, Windows, Linux)
 
 - **MCP tools reference** (`TOOLS_REFERENCE.md`)
-  - Comprehensive documentation for all 7 MCP tools
+  - Comprehensive documentation for all 6 MCP tools
   - Example usage for each tool
   - Parameters and response formats
   - Typical workflow patterns
@@ -32,8 +31,7 @@ All notable changes to the NenAI MCP Quickstart repository.
 ### Documentation Structure
 ```
 mcp-quickstart/
-├── README.md              # Overview and quick start
-├── INSTALLATION.md        # Detailed installation guide
+├── README.md              # Overview, installation, and quick start
 ├── TOOLS_REFERENCE.md     # MCP tools documentation
 ├── CHANGELOG.md           # This file
 ├── .cursorrules           # FSM authoring guide

@@ -19,7 +19,7 @@ Thank you for your interest in contributing! This guide will help you create hig
 
 ### Prerequisites
 
-1. Complete the [installation guide](INSTALLATION.md)
+1. Complete the [installation guide](README.md#installation)
 2. Verify MCP server is working
 3. Review the [FSM authoring guide](.cursorrules)
 4. Study example workflows in `workflows/samples/`
@@ -225,13 +225,13 @@ Before submitting, test your workflow thoroughly:
 
 3. **Monitor execution:**
    ```typescript
-   nen_status({ messageId: "run-message-id" })
+   get_run_status({ messageId: "run-message-id" })
    nen_logs({ messageId: "run-message-id" })
    ```
 
-4. **Review artifacts:**
+4. **Review logs:**
    ```typescript
-   nen_artifacts({ messageId: "run-message-id" })
+   nen_logs({ messageId: "run-message-id" })
    ```
 
 ### Test Cases

@@ -6,32 +6,30 @@ This document summarizes all the documentation additions and improvements made t
 
 ## 📁 New Files Created
 
-### 1. INSTALLATION.md (8.9 KB)
-**Purpose:** Comprehensive installation guide for all platforms and IDEs
+### 1. README.md (Consolidated)
+**Purpose:** Complete guide combining overview, installation, and usage
 
 **Contents:**
 - Prerequisites checklist
-- Step-by-step installation instructions
-- IDE-specific configuration for:
-  - Cursor
-  - Windsurf
-  - Claude Desktop
-  - Other MCP-compatible IDEs
+- Step-by-step installation instructions (automated and manual)
+- Cursor configuration
 - Verification steps
-- Detailed troubleshooting (15+ common issues)
-- Advanced configuration options
-- Update and uninstallation instructions
+- Creating your first workflow
+- Available MCP tools overview
+- Troubleshooting guide (common issues with solutions)
+- Advanced topics (updating, uninstallation)
+- Documentation links
 
 **Key Features:**
-- Platform-specific paths (macOS, Windows, Linux)
+- Single source of truth for getting started
 - Copy-paste ready configuration snippets
-- Clear explanation of each config field
-- Solutions for common installation problems
+- Clear explanation of each setup step
+- Task-based organization
 
 ---
 
 ### 2. TOOLS_REFERENCE.md (11.3 KB)
-**Purpose:** Complete reference documentation for all 7 MCP tools
+**Purpose:** Complete reference documentation for all 6 MCP tools
 
 **Contents:**
 - Tool overview table with requirements
@@ -39,9 +37,8 @@ This document summarizes all the documentation additions and improvements made t
   - `nen_create_workflow` - Parameters, examples, best practices
   - `nen_upload` - Deployment configuration
   - `nen_run` - Execution parameters and error handling
-  - `nen_status` - Status checking and response format
-  - `nen_artifacts` - Artifact download and structure
-  - `nen_list_runs` - Run history and filtering
+  - `get_run_status` - Status checking and response format
+- `list_runs` - Run history and filtering
 - Typical workflow lifecycle diagram
 - Tips and best practices for each tool
 - Common error messages and solutions
@@ -115,41 +112,22 @@ This document summarizes all the documentation additions and improvements made t
 
 ---
 
-### 7. QUICK_SETUP.md (2.3 KB)
-**Purpose:** One-page quick reference card
-
-**Contents:**
-- Installation command (1-2-3 steps)
-- IDE configuration (copy-paste ready)
-- Verification command
-- Tool overview table
-- First workflow example
-- Common troubleshooting
-- Links to detailed docs
-
-**Key Features:**
-- Designed for printing or quick reference
-- Minimal, essential information only
-- Copy-paste ready commands
-
----
 
 ## ✏️ Files Modified
 
 ### 1. README.md
 **Changes:**
-- Enhanced quick start section with detailed IDE configuration
-- Expanded to support Cursor, Windsurf, and Claude Desktop
-- Added comprehensive tool overview table with examples
-- Added "What's Next?" section for new users
-- Added "Advanced Usage" section
-- Added "Troubleshooting" section
-- Added "Resources" section with links to all docs
-- Added "Quick Links" reference table
-- Better organization with clear sections
+- Consolidated INSTALLATION.md and QUICK_SETUP.md into single comprehensive guide
+- Step-by-step installation with both automated and manual options
+- Prerequisites section
+- First workflow creation guide
+- Complete tool overview table
+- Troubleshooting section with common issues
+- Advanced topics section
+- Better organization with clear, progressive sections
 
-**Before:** 3.0 KB, basic setup only
-**After:** 10.4 KB, comprehensive guide
+**Before:** 3.0 KB across 3 separate files (README, INSTALLATION, QUICK_SETUP)
+**After:** Single comprehensive README.md
 
 ---
 
@@ -159,25 +137,21 @@ This document summarizes all the documentation additions and improvements made t
 
 ## 📊 Documentation Statistics
 
-### Total Documentation Added
-- **7 new files**
-- **Multiple files modified** (setup and docs updated for remote MCP)
-- **~48 KB** of new documentation
-- **9 major topics** covered comprehensively
+### Documentation Structure
+- **Consolidated files:** README.md (combines overview, installation, usage)
+- **Specialized guides:** TOOLS_REFERENCE.md, .cursorrules, CONTRIBUTING.md
+- **Meta docs:** CHANGELOG.md, DOCUMENTATION_GUIDE.md, DOCS_SUMMARY.md, DOCS_MAP.md, LICENSE
 
 ### Coverage by Topic
 
-| Topic | Files | Size |
-|-------|-------|------|
-| Installation | INSTALLATION.md, QUICK_SETUP.md | 11.2 KB |
-| Tools & API | TOOLS_REFERENCE.md | 11.3 KB |
-| Workflow Authoring | .cursorrules (existing) | 8.3 KB |
-| Contributing | CONTRIBUTING.md | 8.6 KB |
-| Navigation | DOCUMENTATION_GUIDE.md | 8.1 KB |
-| Overview | README.md | 10.4 KB |
-| Meta | CHANGELOG.md, LICENSE | 2.9 KB |
-
-**Total:** 60.8 KB of documentation
+| Topic | Files | Purpose |
+|-------|-------|---------|
+| Getting Started | README.md | Installation, first workflow, troubleshooting |
+| Tools & API | TOOLS_REFERENCE.md | Complete MCP tools reference |
+| Workflow Authoring | .cursorrules | FSM authoring patterns and best practices |
+| Contributing | CONTRIBUTING.md | Contribution guidelines and standards |
+| Navigation | DOCUMENTATION_GUIDE.md, DOCS_MAP.md | Documentation navigation |
+| Meta | CHANGELOG.md, DOCS_SUMMARY.md, LICENSE | Version history and licensing |
 
 ---
 
@@ -214,14 +188,12 @@ This document summarizes all the documentation additions and improvements made t
 
 ### Before
 ```
-User → README (basic setup) → Trial and error → Confusion → Support ticket
+User → README (basic) → INSTALLATION.md → QUICK_SETUP.md → Confusion about which to follow
 ```
 
-### After
+### After (Consolidated)
 ```
-User → README (overview)
-     ↓
-     INSTALLATION.md (detailed setup)
+User → README.md (complete guide: install → first workflow → troubleshoot)
      ↓
      TOOLS_REFERENCE.md (learn tools)
      ↓
@@ -232,8 +204,6 @@ User → README (overview)
      [At any point]
      ↓
      DOCUMENTATION_GUIDE.md (find what you need)
-     ↓
-     QUICK_SETUP.md (quick reference)
 ```
 
 ---
@@ -299,16 +269,16 @@ User → README (overview)
 ## ✨ Highlights
 
 ### Most Comprehensive Document
-**TOOLS_REFERENCE.md** - Complete reference for all 7 tools with examples, parameters, responses, and use cases
+**TOOLS_REFERENCE.md** - Complete reference for all tools with examples, parameters, responses, and use cases
 
 ### Most Useful for Beginners
-**INSTALLATION.md** - Step-by-step guide covers all platforms and solves most common setup issues
+**README.md** - Consolidated guide covers installation, first workflow, and troubleshooting in one place
 
 ### Most Strategic
 **DOCUMENTATION_GUIDE.md** - Helps users find exactly what they need, when they need it
 
-### Most Practical
-**QUICK_SETUP.md** - One-page reference for keeping installation steps handy
+### Most Streamlined
+**Single README.md** - Eliminates confusion between multiple setup guides
 
 ---
 
