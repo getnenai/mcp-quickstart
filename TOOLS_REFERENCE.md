@@ -6,14 +6,17 @@ Quick reference guide for Nen MCP tools (via the **remote MCP server**).
 
 ## Tool Overview
 
-| Tool | Purpose | Requires API Key |
-|------|---------|------------------|
-| `nen_create_workflow` | Generate workflow FSM files | No |
-| `nen_upload` | Upload workflow to platform | Yes |
-| `nen_run` | Execute a workflow | Yes |
-| `get_run_status` | Check workflow run status | Yes |
-| `list_runs` | List recent runs for a workflow | Yes |
-| `list_workflows` | List workflows in a deployment | Yes |
+| Tool | Purpose |
+|------|---------|
+| `nen_create_workflow` | Generate workflow FSM files from natural language |
+| `nen_upload` | Upload workflow files to S3 and update DynamoDB |
+| `nen_run` | Execute a workflow |
+| `nen_status` | Check workflow run status |
+| `nen_artifacts` | Download run artifacts (video, logs) |
+| `nen_list_runs` | List recent runs for a workflow |
+| `update_workflow` | Update workflow files and publish to S3 |
+| `get_run_video` | Get URL to view run dashboard |
+| `get_run_logs` | Retrieve full log content for a run |
 
 ---
 
@@ -96,17 +99,16 @@ nen_create_workflow({
 
 ## nen_upload
 
-Upload workflow files to S3 and register in DynamoDB.
+Upload workflow files to the NenAI platform.
 
 ### Parameters
 
 ```typescript
 {
   localPath: string;        // Path to local workflow directory
-  orgName: string;          // Organization name (e.g., 'puppilot')
-  orgId: string;            // Organization UUID
   deploymentName: string;   // Deployment name (e.g., 'pulse')
-  workflowId: string;       // Workflow UUID
+  workflowId?: string;      // Workflow UUID (optional for new workflows)
+  workflowName?: string;    // Workflow name (optional)
 }
 ```
 
@@ -115,26 +117,22 @@ Upload workflow files to S3 and register in DynamoDB.
 ```typescript
 nen_upload({
   localPath: "./workflows/my_workflows/patient-search",
-  orgName: "myorg",
-  orgId: "550e8400-e29b-41d4-a716-446655440000",
-  deploymentName: "production",
+  deploymentName: "pulse",
   workflowId: "123e4567-e89b-12d3-a456-426614174000"
 })
 ```
 
 ### Requirements
 
-- Valid AWS credentials with S3 write access
 - Workflow files in the local directory
-- Organization and deployment must exist in DynamoDB
+- Valid deployment name
 
 ### Success Response
 
 ```json
 {
   "success": true,
-  "message": "Workflow uploaded successfully to s3://nenai-customers/...",
-  "s3Path": "s3://nenai-customers/myorg/production/workflows/..."
+  "message": "Workflow uploaded successfully"
 }
 ```
 
@@ -148,10 +146,8 @@ Trigger workflow execution on the NenAI platform.
 
 ```typescript
 {
-  workflowId: string;       // Workflow UUID
-  orgId: string;            // Organization UUID
-  deploymentName: string;   // Deployment name
-  input: Record<string, any>; // Input variables as key-value pairs
+  workflowId: string;              // Workflow UUID
+  params?: Record<string, any>;    // Optional input variables as key-value pairs
 }
 ```
 
@@ -160,9 +156,7 @@ Trigger workflow execution on the NenAI platform.
 ```typescript
 nen_run({
   workflowId: "123e4567-e89b-12d3-a456-426614174000",
-  orgId: "550e8400-e29b-41d4-a716-446655440000",
-  deploymentName: "production",
-  input: {
+  params: {
     PATIENT_NAME: "John Doe",
     DATE_OF_BIRTH: "1990-01-15",
     SEARCH_TYPE: "name"
@@ -172,8 +166,7 @@ nen_run({
 
 ### Requirements
 
-- Valid `NEN_API_KEY` environment variable
-- Workflow must be uploaded to S3 via `nen_upload`
+- Workflow must be uploaded via `nen_upload` or `update_workflow`
 - All required input variables must be provided
 
 ### Success Response
@@ -191,13 +184,12 @@ nen_run({
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| 401 Unauthorized | Invalid API key | Check `NEN_API_KEY` |
-| 404 Not Found | Workflow doesn't exist | Use `nen_upload` first |
+| 404 Not Found | Workflow doesn't exist | Use `nen_upload` or `update_workflow` first |
 | 400 Bad Request | Missing required inputs | Check workflow variables |
 
 ---
 
-## get_run_status
+## nen_status
 
 Check the status of a running or completed workflow.
 
@@ -205,15 +197,14 @@ Check the status of a running or completed workflow.
 
 ```typescript
 {
-  runId?: string;           // Run identifier
-  messageId?: string;       // Message identifier (alternative to runId)
+  messageId: string;        // Message identifier from nen_run
 }
 ```
 
 ### Example Usage
 
 ```typescript
-get_run_status({
+nen_status({
   messageId: "msg-xyz789"
 })
 ```
@@ -248,8 +239,7 @@ get_run_status({
 
 ---
 
-
-## list_runs
+## nen_list_runs
 
 List recent workflow runs.
 
@@ -257,7 +247,7 @@ List recent workflow runs.
 
 ```typescript
 {
-  workflowId?: string;      // Filter by workflow (optional)
+  workflowId: string;       // Workflow UUID
   limit?: number;           // Max results (default: 10)
 }
 ```
@@ -265,7 +255,7 @@ List recent workflow runs.
 ### Example Usage
 
 ```typescript
-list_runs({
+nen_list_runs({
   workflowId: "123e4567-e89b-12d3-a456-426614174000",
   limit: 20
 })
@@ -299,78 +289,159 @@ list_runs({
 
 ---
 
-## list_workflows
+## update_workflow
 
-List all workflows in a deployment.
+Update workflow files and publish changes.
 
 ### Parameters
 
 ```typescript
 {
-  deploymentId?: string;    // Optional: Deployment UUID
-  orgId?: string;           // Optional: Filter by organization UUID
-  limit?: number;           // Optional: Max workflows to return (default: 50)
+  workflowId: string;       // Workflow UUID
+  files: Array<{           // Workflow files to write
+    filename: string;      // File path (e.g., orchestrator.json, workflow.json)
+    content: string;       // File contents (UTF-8)
+  }>;
+  workflowName?: string;   // Optional workflow display name
+  deploymentId?: string;   // Optional deployment ID (if API key has multiple deployments)
 }
 ```
 
 ### Example Usage
 
 ```typescript
-// List all workflows
-list_workflows({})
-
-// Specify deployment explicitly
-list_workflows({
-  deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174"
+update_workflow({
+  workflowId: "123e4567-e89b-12d3-a456-426614174000",
+  files: [
+    {
+      filename: "orchestrator.json",
+      content: JSON.stringify(orchestratorConfig, null, 2)
+    },
+    {
+      filename: "workflow.json",
+      content: JSON.stringify(workflowFSM, null, 2)
+    }
+  ],
+  workflowName: "Patient Search v2"
 })
+```
 
-// Filter by organization and limit results
-list_workflows({
-  deploymentId: "dbad9c3b-d6bd-437b-884d-f9c69676d174",
-  orgId: "f303bc4a-81fc-4e37-b4cc-1449b3782260",
-  limit: 20
+### Notes
+
+- Upserts workflow files (creates or updates)
+- Publishes changes automatically
+- Removes any files not included in the `files` array
+
+---
+
+## get_run_video
+
+Get a URL to open the run dashboard with video playback, logs, and downloads.
+
+### Parameters
+
+```typescript
+{
+  messageId: string;        // Run message ID from nen_run
+  deploymentId?: string;    // Optional deployment ID (if API key has multiple deployments)
+}
+```
+
+### Example Usage
+
+```typescript
+get_run_video({
+  messageId: "msg-xyz789"
 })
 ```
 
 ### Response
 
-```typescript
+```json
 {
-  success: true,
-  data: {
-    workflows: [
-      {
-        workflowId: "abc123...",
-        orgId: "org456...",
-        orgName: "acme-corp",
-        workflowName: "patient-search",
-        deploymentId: "deploy789...",
-        s3WorkflowPath: "v1234567890",
-        createdAt: "2026-01-14T10:30:00.000Z",
-        updatedAt: "2026-01-14T12:45:00.000Z",
-        publishedAt: "2026-01-14T12:45:00.000Z"
-      }
-    ],
-    count: 1
-  }
+  "url": "https://dashboard.getnen.ai/runs/msg-xyz789",
+  "linkMarkdown": "[View Run Dashboard](https://dashboard.getnen.ai/runs/msg-xyz789)"
 }
 ```
 
-### Common Use Cases
+### Notes
 
-- Discovering available workflows in your deployment
-- Finding a workflow ID to use with `nen_run`
-- Checking when workflows were last updated
-- Seeing all workflows for a specific organization
+- The returned URL should be opened in a browser
+- Dashboard includes video playback, execution logs, and artifact downloads
+- Always include the clickable link in your response to the user
 
-### Typical Workflow
+---
 
+## get_run_logs
+
+Retrieve the full log content for a workflow run.
+
+### Parameters
+
+```typescript
+{
+  messageId: string;        // Run message ID from nen_run
+  deploymentId?: string;    // Optional deployment ID (if API key has multiple deployments)
+}
 ```
-1. list_workflows({}) → Get all available workflows
-2. Copy workflow ID from results
-3. list_runs({ workflowId: "..." }) → See recent runs
-4. nen_run({ workflowId: "..." }) → Trigger new run
+
+### Example Usage
+
+```typescript
+get_run_logs({
+  messageId: "msg-xyz789"
+})
 ```
+
+### Response
+
+Returns the raw log content as text, including:
+- Timestamps
+- State transitions
+- Tool calls and results
+- VLM verification responses
+- Error messages and tracebacks
+
+### Use Cases
+
+- Debugging failed runs
+- Understanding workflow execution flow
+- Identifying timeout or verification issues
+- Analyzing performance bottlenecks
+
+---
+
+## nen_artifacts
+
+Download run artifacts (video, logs) to your local machine.
+
+### Parameters
+
+```typescript
+{
+  workflowId: string;       // Workflow UUID
+  messageId: string;        // Run message ID
+  outputDir?: string;       // Local directory to sync to (default: ./artifacts)
+  sshHost?: string;         // SSH host name (default: puppilot)
+  deploymentId?: string;    // Optional deployment ID (if API key has multiple deployments)
+}
+```
+
+### Example Usage
+
+```typescript
+nen_artifacts({
+  workflowId: "123e4567-e89b-12d3-a456-426614174000",
+  messageId: "msg-xyz789",
+  outputDir: "./my-artifacts"
+})
+```
+
+### Downloaded Files
+
+- `recording.mp4` - Screen recording of workflow execution
+- `run.log` - Complete execution logs
+- Any output files generated by the workflow
 
 ---
 
@@ -411,7 +482,7 @@ Result: Workflow available on platform
 ```
 Agent: "Run the patient-search workflow for John Doe"
 ↓
-Uses: nen_run with input { PATIENT_NAME: "John Doe" }
+Uses: nen_run with params { PATIENT_NAME: "John Doe" }
 ↓
 Response: runId and messageId
 ```
@@ -421,7 +492,7 @@ Response: runId and messageId
 ```
 Agent: "Check the status of that run"
 ↓
-Uses: get_run_status with messageId
+Uses: nen_status with messageId
 ↓
 Response: Current state and progress
 ```
@@ -433,11 +504,11 @@ Developer: Edits FSM files to fix issue
 ↓
 Agent: "Upload the updated workflow"
 ↓
-Uses: nen_upload (overwrites previous version)
+Uses: update_workflow or nen_upload
 ↓
 Agent: "Run it again"
 ↓
-Uses: nen_run with same input
+Uses: nen_run with same params
 ```
 
 ---

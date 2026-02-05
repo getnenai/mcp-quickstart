@@ -7,8 +7,6 @@ Build computer use automations using natural language in Cursor. Author, test, a
 ## Prerequisites
 
 - **Cursor** (with support for remote MCP servers)
-- **API Key** from your NenAI customer engineer
-- **Remote MCP URL** from your NenAI customer engineer
 
 ---
 
@@ -21,50 +19,44 @@ git clone https://github.com/getnenai/mcp-quickstart.git
 cd mcp-quickstart
 ```
 
-### Step 2: Set environment variables
+### Step 2: Configure Cursor
 
-Set these in the environment **Cursor runs with**:
+Click the link below to automatically install the NenAI Platform MCP Server:
 
-```bash
-export NEN_API_KEY="your_api_key_here"
-export NEN_MCP_URL="your_remote_mcp_url_here"
-```
+[Install NenAI Platform MCP Server](cursor://anysphere.cursor-deeplink/mcp/install?config=eyJOZW5BSSBQbGF0Zm9ybSI6eyJ1cmwiOiJodHRwczovL21jcC5nZXRuZW4uYWkvdjEifX0=)
 
-> **Note:** Get `NEN_MCP_URL` from your NenAI customer engineer.
+This will automatically add the server configuration to your `mcp.json` file.
 
-### Step 3: Configure Cursor
+<details>
+<summary>Manual installation (alternative)</summary>
+
+If the automatic installation doesn't work:
 
 1. Within Cursor, open "Cursor Settings" (Cmd-Shift-J)
 2. Select "Tools & MCP" along the left bar
 3. Click on "New MCP Server"
-4. In `mcp.json`, add the "nen" key under `mcpServers`:
+4. In `mcp.json`, add the "NenAI Platform" key under `mcpServers`:
 
 ```json
 {
   "mcpServers": {
-    "nen": {
-      "url": "${env:NEN_MCP_URL}",
-      "headers": {
-        "X-Api-Key": "${env:NEN_API_KEY}"
-      }
+    "NenAI Platform": {
+      "url": "https://mcp.getnen.ai/v1"
     }
   }
 }
 ```
+</details>
 
-### Step 4: Restart Cursor
-
-**Completely quit and reopen Cursor** (Cmd+Q / Ctrl+Q, not just reload window).
-
-### Step 5: Verify
+### Step 3: Verify
 
 Ask the AI agent in Cursor:
 
 ```
-Use list_workflows to verify the MCP server is working
+Show me the available NenAI Platform MCP tools
 ```
 
-✅ You should see the MCP server tools responding!
+✅ You should see tools like nen_create_workflow, nen_run, nen_status, update_workflow, get_run_video, and get_run_logs!
 
 ---
 
@@ -80,20 +72,6 @@ Create a workflow that navigates to google.com and takes a screenshot
 
 The AI will use `nen_create_workflow` to generate FSM files in `workflows/my_workflows/`, then upload and run them using the available MCP tools.
 
-### Available MCP Tools
-
-| Tool | Description |
-|------|-------------|
-| `list_workflows` | List all workflows in a deployment |
-| `update_workflow` | Upload workflow to NenAI platform |
-| `list_runs` | List recent runs for a workflow |
-| `create_run` | Execute a workflow |
-| `get_run_status` | Check workflow run status |
-| `get_run_logs` | View workflow logs |
-| `get_run_video` | View workflow logs |
-
-See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
-
 ---
 
 ## Troubleshooting
@@ -101,13 +79,7 @@ See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for detailed documentation.
 | Problem | Solution |
 |---------|----------|
 | MCP tools not showing up | Validate JSON syntax in `~/.cursor/mcp.json` |
-| MCP tools not showing up | Ensure Cursor was fully restarted (Cmd+Q / Ctrl+Q) |
-| MCP tools not showing up | Confirm `mcp.json` uses `url` (remote) not `command` (local) |
-| "401 Unauthorized" | Verify `NEN_API_KEY` is correct |
-| "401 Unauthorized" | Ensure Cursor can read `${env:NEN_API_KEY}` (restart after changing env vars) |
-| "401 Unauthorized" | Contact your NenAI customer engineer to verify key validity |
 | Network errors | Check internet connection / proxy / firewall |
-| Network errors | Confirm `NEN_MCP_URL` is correct |
 
 See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
 
@@ -117,11 +89,11 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
 
 ### Updating
 
-Remote MCP tools are updated server-side. Restart Cursor if you change `mcp.json` or environment variables.
+Remote MCP tools are updated server-side automatically.
 
 ### Uninstallation
 
-1. Remove the `"nen"` entry from `~/.cursor/mcp.json`
+1. Remove the `"NenAI Platform"` entry from `~/.cursor/mcp.json`
 2. Restart Cursor
 
 ---
@@ -137,7 +109,7 @@ Remote MCP tools are updated server-side. Restart Cursor if you change `mcp.json
 
 ## Security
 
-Credentials are provided via environment variables and referenced in `mcp.json` using `${env:...}`. They are never committed to git.
+The MCP server configuration uses a public URL endpoint. No credentials are stored in `mcp.json`.
 
 ---
 
