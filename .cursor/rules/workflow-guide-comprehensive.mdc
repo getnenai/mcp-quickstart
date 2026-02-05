@@ -1535,6 +1535,61 @@ with open("workflow-log.jsonl") as f:
         print(f"{log_entry['timestamp']}: {log_entry['message']}")
 ```
 
+### Debugging Workflows with `get_run_logs()`
+
+**🔍 CRITICAL: When Users Report Issues**
+
+When a user reports that a workflow didn't work as expected, **ALWAYS use the `get_run_logs()` MCP tool** to see what actually happened:
+
+```python
+# User says: "It failed" or "It should have clicked the button"
+# AI IMMEDIATELY calls:
+get_run_logs(messageId="...")
+
+# Then analyzes the logs to:
+# 1. Find where the workflow actually failed
+# 2. See what the VLM was "thinking" at each step
+# 3. Check validation results (did checks pass or fail?)
+# 4. Review extraction attempts and results
+# 5. Compare actual behavior (in logs) with expected behavior (user described)
+```
+
+**Why This is Critical:**
+- Logs show the ground truth of what happened
+- Without logs, you're guessing and might make wrong changes
+- Logs contain VLM reasoning that explains decisions
+- Logs reveal subtle issues that aren't visible in the code
+
+**Common Debugging Scenarios:**
+
+| User Says | What to Do | What to Look for in Logs |
+|-----------|------------|--------------------------|
+| "It didn't click the button" | `get_run_logs()` | Search for button-related actions, check if element was found |
+| "It should have logged in" | `get_run_logs()` | Look for authentication attempts, check validation results |
+| "The extraction failed" | `get_run_logs()` | Find extraction calls, see what data was returned or why it failed |
+| "It got stuck" | `get_run_logs()` | Check where iteration stopped, look for max_iterations reached |
+| "It typed the wrong thing" | `get_run_logs()` | Search for keyboard.type() calls, verify what was actually typed |
+
+**Reading Logs Effectively:**
+
+```jsonl
+# Logs are in JSONL format (one JSON object per line)
+{"timestamp":"...","level":"INFO","message":"Agent action: Click the submit button"}
+{"timestamp":"...","level":"INFO","message":"VLM reasoning: I see a blue submit button at..."}
+{"timestamp":"...","level":"INFO","message":"Validation result: True"}
+{"timestamp":"...","level":"ERROR","message":"WorkflowError: Element not found"}
+```
+
+**What to Search for in Logs:**
+- `"error"` - Find error messages
+- `"failed"` - Identify failures
+- `"validation"` - See which checks passed/failed
+- `"extract"` - Check data extraction results
+- `"VLM reasoning"` or `"thinking"` - Understand AI decisions
+- The specific element name user mentioned (e.g., "submit button")
+
+---
+
 ### Debugging Strategies
 
 **Strategy 1: Checkpoint Logging**

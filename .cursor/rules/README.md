@@ -28,21 +28,43 @@ Core NenAI workflow authoring principles loaded in every session.
 
 ---
 
-### workflow-python-sdk.mdc
-**File-pattern: `workflows/**/*.py` | ~300 lines**
+### workflow-creation-process.mdc
+**Always applies | ~200 lines**
 
-Python-specific SDK guidance that auto-loads when editing workflow.py files.
+Systematic 4-step process for creating workflows: build → validate → deploy → run.
 
 **Contains:**
-- Handler function patterns
-- Payload access patterns (optional, required, type checking)
-- Return structure conventions
-- Error handling with try/except
-- Logging best practices
-- Variable naming conventions
-- Common pitfalls to avoid
+- Step 1: Build workflow with Python SDK
+- Step 2: Validate workflow structure with nen_validate
+- Step 3: Deploy using NenAI platform tools
+- Step 4: Run and verify execution
+- Complete example flow
+- Quick reference table
 
-**When it applies:** Automatically when editing any .py file in workflows/ directory
+**When it applies:** Automatically in all sessions, especially when user wants to create a new workflow
+
+---
+
+### workflow-python-sdk.mdc
+**Agent-decided | ~500 lines**
+
+Python SDK execution environment and best practices guide.
+
+**Contains:**
+- **Execution environment** (Linux containers, xdotool, platform compatibility)
+- **Platform-specific keyboard commands** (ctrl vs command)
+- **Common patterns** (clearing fields, validation strategies, keyboard delays)
+- **Common pitfalls** (platform incompatibility, field clearing, false positives)
+- **Debugging tips** (reading VLM logs, error patterns)
+- **SDK function quick reference**
+
+**When it applies:** AI loads this when:
+- Need platform-specific guidance (keyboard commands, execution environment)
+- Debugging keyboard/mouse control issues
+- Learning validation strategies
+- Understanding common pitfalls
+
+**How to reference:** `@workflow-python-sdk`
 
 ---
 
@@ -92,19 +114,20 @@ Detailed SDK reference with function signatures and examples.
 ---
 
 ### mcp-platform-tools.mdc
-**Agent-decided | 326 lines**
+**Agent-decided | ~400 lines**
 
-NenAI MCP tool usage for platform operations.
+NenAI MCP tool usage for platform operations including validation.
 
 **Contains:**
 - When to use MCP tools vs direct file editing
-- Tool-specific documentation (nen_run, get_run_logs, etc.)
+- Tool-specific documentation (nen_validate, nen_run, get_run_logs, etc.)
+- Workflow validation guidelines
 - Decision matrix for tool selection
 - Deployment and execution workflows
 - Debugging with platform logs
 
 **When it applies:** AI loads this when:
-- User mentions deployment, running, or testing workflows
+- User mentions validation, deployment, running, or testing workflows
 - Debugging failed workflow executions
 - Working with NenAI platform operations
 - Need to list or manage deployed workflows
@@ -116,21 +139,17 @@ NenAI MCP tool usage for platform operations.
 ## Context Loading Strategy
 
 ### Automatic Context (Always Loaded)
-- `workflow-core.mdc` (~170 lines)
+- `workflow-core.mdc` (~180 lines)
+- `workflow-creation-process.mdc` (~200 lines)
 
-**Total: ~170 lines baseline context**
-
-### Automatic File-Based Context
-When editing `workflows/**/*.py`:
-- `workflow-core.mdc` + `workflow-python-sdk.mdc`
-
-**Total: ~470 lines when editing workflows**
+**Total: ~380 lines baseline context**
 
 ### On-Demand Context (AI-Decided)
 AI intelligently loads additional guides based on task:
 - Complex authoring → `workflow-guide-comprehensive.mdc` (+2,542 lines)
 - Syntax lookup → `workflow-reference-detailed.mdc` (+872 lines)
-- Platform operations → `mcp-platform-tools.mdc` (+326 lines)
+- Platform operations & validation → `mcp-platform-tools.mdc` (+400 lines)
+- Execution environment & pitfalls → `workflow-python-sdk.mdc` (+500 lines)
 
 ## How to Use These Rules
 
@@ -141,18 +160,19 @@ Just ask - the always-apply core rules provide enough context:
 ```
 
 ### For Workflow Editing
-Open the workflow.py file and both core + python-sdk rules load automatically:
+Open any workflow file and the core rules are always available:
 ```
 Open: workflows/my_workflows/login/workflow.py
-Auto-loads: workflow-core.mdc + workflow-python-sdk.mdc
+Auto-loaded: workflow-core.mdc + workflow-creation-process.mdc
 ```
 
 ### For Complex Tasks
-Mention the comprehensive guide explicitly or let AI decide:
+Mention specific guides explicitly or let AI decide:
 ```
-"I need to understand the execution environment" → AI loads comprehensive guide
-"Show me JSON schema examples" → AI loads detailed reference
-"How do I deploy my workflow?" → AI loads MCP platform tools
+"I need to understand the execution environment" → AI loads workflow-python-sdk.mdc
+"Show me JSON schema examples" → AI loads workflow-reference-detailed.mdc
+"How do I deploy my workflow?" → AI loads mcp-platform-tools.mdc
+"Help me with advanced patterns" → AI loads workflow-guide-comprehensive.mdc
 ```
 
 ### Manual References
@@ -161,6 +181,7 @@ You can explicitly reference rules using @-mentions:
 "@workflow-guide-comprehensive explain the agent primitive in detail"
 "@workflow-reference-detailed show me table extraction schema"
 "@mcp-platform-tools how do I debug a failed run?"
+"@workflow-python-sdk what keyboard commands work in Linux containers?"
 ```
 
 ## Workflow Approaches
@@ -201,26 +222,32 @@ Use **FSM** approach when:
 ## Benefits of Modern Rule Structure
 
 This project uses modern `.mdc` rules with intelligent context management:
-- `workflow-core.mdc` (always-on, ~170 lines)
-- `workflow-python-sdk.mdc` (file-pattern)
-- `workflow-guide-comprehensive.mdc` (on-demand)
-- `workflow-reference-detailed.mdc` (on-demand)
-- `mcp-platform-tools.mdc` (on-demand)
+- `workflow-core.mdc` (always-on, ~180 lines)
+- `workflow-creation-process.mdc` (always-on, ~200 lines)
+- `workflow-python-sdk.mdc` (on-demand, ~500 lines)
+- `workflow-guide-comprehensive.mdc` (on-demand, ~2542 lines)
+- `workflow-reference-detailed.mdc` (on-demand, ~872 lines)
+- `mcp-platform-tools.mdc` (on-demand, ~400 lines)
 
 **Advantages:**
-- Minimal baseline context (~170 lines vs traditional always-on approach)
+- Focused baseline context (~380 lines) for workflow creation
+- Systematic 4-step process (build → validate → deploy → run) always available
+- Built-in validation step prevents deployment errors
 - Intelligent loading of detailed guides based on task complexity
 - File-aware Python SDK guidance for workflow files
 - Better organization and maintainability
 
 ## Key Features
 
-1. **Minimal Context Pollution** - Only ~170 lines always loaded
-2. **Intelligent Scaling** - Detailed guides load only when needed
-3. **File-Aware** - Python SDK tips auto-load for .py files
-4. **Fast Queries** - Simple questions get simple context
-5. **Deep Dives** - Complex tasks get comprehensive documentation
-6. **Team-Ready** - Version-controlled, well-organized rules
+1. **Systematic Workflow Creation** - 4-step process (build → validate → deploy → run) always available
+2. **Mandatory Validation** - **CRITICAL:** `nen_validate()` must be called after EVERY workflow file change
+3. **Built-in Validation** - nen_validate tool catches errors before deployment
+4. **Minimal Context Pollution** - Only ~380 lines always loaded
+5. **Intelligent Scaling** - Detailed guides load only when needed
+6. **File-Aware** - Python SDK tips auto-load for .py files
+7. **Fast Queries** - Simple questions get simple context
+8. **Deep Dives** - Complex tasks get comprehensive documentation
+9. **Team-Ready** - Version-controlled, well-organized rules
 
 ## Rule File Locations
 
@@ -229,7 +256,8 @@ All rules in `.cursor/rules/`:
 .cursor/rules/
 ├── README.md (this file)
 ├── workflow-core.mdc (always-apply)
-├── workflow-python-sdk.mdc (file-pattern: workflows/**/*.py)
+├── workflow-creation-process.mdc (always-apply)
+├── workflow-python-sdk.mdc (agent-decided)
 ├── workflow-guide-comprehensive.mdc (agent-decided)
 ├── workflow-reference-detailed.mdc (agent-decided)
 └── mcp-platform-tools.mdc (agent-decided)
@@ -237,5 +265,12 @@ All rules in `.cursor/rules/`:
 
 ---
 
-**Last Updated:** 2026-02-04  
-**Version:** 2.0.0
+## Additional Documentation
+
+For detailed validation guidance, see:
+- [WORKFLOW_VALIDATION_GUIDE.md](../../WORKFLOW_VALIDATION_GUIDE.md) - Complete validation guide
+
+---
+
+**Last Updated:** 2026-02-05  
+**Version:** 2.1.0

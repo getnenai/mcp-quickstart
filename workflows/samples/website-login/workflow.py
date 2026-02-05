@@ -5,62 +5,64 @@ Navigate to a website and log in with provided credentials.
 A simple, reusable login workflow.
 """
 from nen.workflow import agent, validate, keyboard
+from pydantic import BaseModel, Field
 
 
-def handler(payload: dict) -> dict:
+class Input(BaseModel):
+    """Input parameters for this workflow."""
+    
+    web_url: str = Field(min_length=1, description="URL of the website to log in to")
+    username: str = Field(min_length=1, description="Username or email for login")
+    password: str = Field(min_length=1, description="Password for login")
+
+
+class Output(BaseModel):
+    """Output returned by this workflow."""
+    
+    success: bool
+    message: str | None = None
+    error: str | None = None
+
+
+def run(input: Input) -> Output:
     """
     Log into a website with username and password.
     
     Args:
-        payload: Input parameters
-            - WEB_URL: URL of the website to log in to (e.g., 'https://example.com/login')
-            - USERNAME: Username or email for login
-            - PASSWORD: Password for login
+        input: Pydantic model with login credentials
     
     Returns:
-        dict with:
-            - success: bool
-            - error: str (if success is False)
+        Output model with login results
     """
-    # Get inputs
-    web_url = payload.get("WEB_URL", "")
-    username = payload.get("USERNAME", "")
-    password = payload.get("PASSWORD", "")
-    
-    if not web_url or not username or not password:
-        return {
-            "success": False,
-            "error": "Missing required parameters: WEB_URL, USERNAME, PASSWORD"
-        }
     
     # Environment Setup: Launch browser and navigate
     agent("Open Firefox or Chromium browser")
     if not validate("Is the browser open?", timeout=10):
-        return {"success": False, "error": "Failed to open browser"}
+        return Output(success=False, error="Failed to open browser")
     
     # Dismiss any startup popups
     agent("Close any welcome messages, popups, or dialogs if they appear", max_iterations=5)
     
     agent("Click the address bar at the top of the browser")
-    keyboard.type(web_url)
+    keyboard.type(input.web_url)
     keyboard.press("Return")
     
     if not validate("Is the webpage loading or loaded?", timeout=30):
-        return {"success": False, "error": f"Failed to load {web_url}"}
+        return Output(success=False, error=f"Failed to load {input.web_url}")
     
     # Authentication: Login to the website
-    agent(f"Click the username or email field and type '{username}'", max_iterations=5)
+    agent(f"Click the username or email field and type '{input.username}'", max_iterations=5)
     
     agent("Click the password field", max_iterations=3)
-    keyboard.type(password, interval=0.01)
+    keyboard.type(input.password, interval=0.01)
     
     agent("Click the Login or Sign In button", max_iterations=5)
     
     # Verify successful login
     if not validate("Is the user logged in? Look for a dashboard, profile menu, navigation sidebar, or welcome message.", timeout=30):
-        return {"success": False, "error": "Login verification failed - user does not appear to be logged in"}
+        return Output(success=False, error="Login verification failed - user does not appear to be logged in")
     
-    return {
-        "success": True,
-        "message": f"Successfully logged into {web_url}"
-    }
+    return Output(
+        success=True,
+        message=f"Successfully logged into {input.web_url}"
+    )

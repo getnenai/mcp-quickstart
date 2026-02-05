@@ -4,35 +4,55 @@ Workflow: SDK Primitives Test
 This workflow demonstrates the nen.workflow SDK primitives.
 Modify this file to build your automation workflow.
 """
-from nen.workflow import agent, validate, extract, keyboard, mouse
+from nen.workflow import agent, validate, extract
+from pydantic import BaseModel, Field
 
 
-def run(input: dict) -> dict:
+class Input(BaseModel):
+    """Input parameters for this workflow.
+    
+    Define your workflow's input variables here.
+    These will be provided when the workflow is executed.
+    """
+    
+    website_url: str = Field(default="https://news.ycombinator.com", min_length=1)
+    post_index: int = Field(default=0, ge=0)
+
+
+class Output(BaseModel):
+    """Output returned by this workflow.
+    
+    Define the structured data your workflow returns.
+    """
+    
+    success: bool
+    title: str | None = None
+    error: str | None = None
+
+
+def run(input: Input) -> Output:
     """
     Main workflow entry point.
 
     Args:
-        input: Input parameters passed when the workflow is executed.
-               Access variables like: input.get("WEBSITE_URL", "https://example.com")
+        input: Pydantic model with workflow input parameters.
 
     Returns:
-        dict: Results to return from the workflow execution.
+        Output model with workflow results.
     """
-    # Get input variables from payload
-    website_url = input.get("WEBSITE_URL", "https://news.ycombinator.com")
-    title_number = input.get("TITLE_NUMBER")
-
-
     # Use natural language to control the computer
-    agent(f"Open Firefox and navigate to {website_url}")
+    agent(f"Open Firefox and navigate to {input.website_url}")
 
     # Validate that we reached the expected state
     if not validate("Is the website loaded in the browser?"):
-        return {"success": False, "error": "Failed to load website"}
+        return Output(
+            success=False,
+            error="Failed to load website"
+        )
 
     # Extract structured data from the screen
     result = extract(
-        f"What is the title of the {title_number}th post on the page?",
+        f"What is the title of post {input.post_index + 1}?",
         schema={
             "type": "object",
             "properties": {
@@ -42,7 +62,7 @@ def run(input: dict) -> dict:
         }
     )
 
-    return {
-        "success": True,
-        "title": result.get("title"),
-    }
+    return Output(
+        success=True,
+        title=result.get("title")
+    )

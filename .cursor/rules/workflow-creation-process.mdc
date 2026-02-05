@@ -1,0 +1,499 @@
+---
+description: "Workflow creation process: build, deploy, and run workflows using NenAI platform"
+alwaysApply: true
+---
+
+# NenAI Workflow Creation Process
+
+When the user wants to create a new workflow, follow this systematic process:
+
+## ⚠️ CRITICAL RULE: STOP AFTER RUNNING WORKFLOWS ⚠️
+
+**AFTER CALLING `nen_run()` AND OPENING THE BROWSER, YOU MUST IMMEDIATELY STOP AND WAIT FOR USER FEEDBACK.**
+
+- ❌ DO NOT automatically call `get_run_logs()`
+- ❌ DO NOT automatically call `get_run_video()`
+- ❌ DO NOT automatically call `nen_status()`
+- ❌ DO NOT automatically check workflow status
+- ❌ DO NOT automatically try to debug or fix issues
+- ✅ DO share the `messageId` and `liveViewUrl` with the user
+- ✅ DO tell the user the workflow is running
+- ✅ DO automatically open the browser with the `liveViewUrl` using Shell tool
+- ✅ DO wait for the user to observe and return with feedback
+
+**The browser will automatically open with the workflow live view. The user will watch the execution in real-time and return with feedback. Only after the user returns should you help with debugging, checking logs, or iterating on the workflow.**
+
+## Step 1: Build the Workflow
+
+Create the Python SDK workflow file using `nen.workflow` primitives:
+
+1. **Create directory structure:**
+   ```
+   workflows/my_workflows/[workflow-name]/
+   └── workflow.py
+   ```
+
+2. **Author the workflow:**
+   - Use the Python SDK template from `workflow-core.mdc`
+   - Include proper docstring with workflow description
+   - Define Pydantic `Input` and `Output` models with type hints
+   - Implement `run(input: Input) -> Output` function
+   - Use SDK primitives: `agent()`, `validate()`, `extract()`, `keyboard`, `mouse`
+   - Return Pydantic `Output` model with `success: bool` field
+
+3. **Validate locally:**
+   - Check syntax using `Read` + `ReadLints` tools
+   - Ensure all imports are correct
+   - Verify error handling is in place
+
+## Pre-Flight Checklist
+
+Before validating and deploying your workflow, verify these common issues:
+
+### ✅ Platform Compatibility
+- [ ] **Keyboard commands use `"ctrl"`** not `"command"` (workflows run in Linux containers)
+- [ ] All keyboard modifiers are Linux-compatible (ctrl, shift, alt, super)
+- [ ] No macOS-specific commands (Command key will crash with xdotool error)
+
+### ✅ Field Handling
+- [ ] **All input fields are cleared before typing** (use `ctrl+a` → `BackSpace`)
+- [ ] Fields with pre-existing content are explicitly cleared
+- [ ] No assumptions about empty fields
+
+### ✅ Validation Logic
+- [ ] **Check failure indicators FIRST**, then success indicators
+- [ ] Validation questions are specific: "Is there an 'Invalid email' error?" not "Did it work?"
+- [ ] Default to failure (`success=False`) when state is unclear
+- [ ] Timeouts are appropriate for slow operations (20-30s for page loads)
+
+### ✅ Error Handling
+- [ ] All validation failures return `Output(success=False, error="descriptive message")`
+- [ ] Error messages are specific and actionable
+- [ ] No bare exceptions without error context
+
+### ✅ Best Practices
+- [ ] Pydantic `Input` and `Output` models defined with type hints
+- [ ] `Output` model includes `success: bool` field
+- [ ] Agent descriptions are specific: "Click the blue 'Submit' button" not "Click submit"
+- [ ] Sensitive data (passwords, tokens) not logged
+
+**If any checklist item fails, fix it before proceeding to validation.**
+
+## Step 2: Validate the Workflow
+
+Validate the workflow using the NenAI validation tool before deployment:
+
+1. **Run validation:**
+   ```python
+   # Read the workflow file content
+   workflow_content = Read("workflows/my_workflows/[workflow-name]/workflow.py")
+   
+   # Validate the workflow
+   nen_validate(
+     workflow_content=workflow_content,
+     workflow_name="[workflow-name]"
+   )
+   ```
+
+2. **Check validation results:**
+   - If validation passes: Proceed to Step 3 (Deploy)
+   - If validation fails: Fix reported issues and re-validate
+
+3. **Common validation checks:**
+   - Pydantic models are properly defined (`Input` and `Output` classes)
+   - Function signature is correct (`run(input: Input) -> Output`)
+   - Required imports are present (`nen.workflow`, `pydantic`)
+   - Output model includes `success: bool` field
+   - Field validations are properly configured
+   - No syntax or type errors
+
+**IMPORTANT:** Always validate workflows before deployment. This catches errors early and ensures workflows will execute correctly on the platform.
+
+## Step 3: Deploy the Workflow
+
+Deploy to NenAI platform using MCP tools:
+
+1. **List existing workflows** (to get deployment context):
+   ```python
+   nen_list_workflows()
+   ```
+
+2. **Upload/deploy the workflow:**
+   
+   **IMPORTANT:** Always use content-based upload (not localPath) because MCP tools run in a containerized environment and cannot access local filesystem paths.
+   
+   For NEW workflows:
+   ```python
+   # First, read the workflow file content
+   workflow_content = Read("workflows/my_workflows/[workflow-name]/workflow.py")
+   
+   # Then upload using files parameter
+   nen_upload(
+       files=[{
+           "filename": "workflow.py",
+           "content": workflow_content
+       }],
+       workflowName="[workflow-name]"
+   )
+   ```
+   
+   For UPDATING existing workflows:
+   ```python
+   # Read the workflow file content
+   workflow_content = Read("workflows/my_workflows/[workflow-name]/workflow.py")
+   
+   # Update using files parameter
+   update_workflow(
+       workflowId="...",
+       files=[{
+           "filename": "workflow.py",
+           "content": workflow_content
+       }]
+   )
+   ```
+
+3. **Confirm deployment:**
+   - Note the returned `workflowId`
+   - Confirm successful upload message
+
+## Step 4: Run the Workflow and Wait for User Feedback
+
+Execute the workflow and **IMMEDIATELY STOP** to let the user observe:
+
+1. **Execute the workflow:**
+   ```python
+   nen_run(
+       workflowId="[workflow-id-from-step-2]",
+       params={
+           "PARAM_NAME": "value"
+       }
+   )
+   ```
+
+2. **Provide run information:**
+   - Share the `messageId` with the user
+   - Share the `liveViewUrl` so user can watch the workflow execution
+   - Inform user that the workflow is now running
+   - Tell user: "The workflow is running! Watch it execute at the link above and let me know how it goes."
+
+3. **Automatically open the browser:**
+   ```python
+   # Open the liveViewUrl in the user's default browser
+   Shell(f'open "{result.liveViewUrl}"')  # macOS
+   ```
+   
+   **Platform Notes:**
+   - macOS: Use `open "URL"`
+   - Linux: Use `xdg-open "URL"`
+   - Windows: Use `start "" "URL"`
+   
+   **Why not Cursor's Simple Browser?**
+   - MCP tools cannot directly control Cursor's UI (architectural limitation)
+   - Using the system's default browser is the most reliable approach
+   - The `open` command works seamlessly on macOS (primary development platform)
+
+4. **🛑 STOP HERE - END YOUR RESPONSE IMMEDIATELY 🛑**
+   
+   **AFTER OPENING THE BROWSER, YOUR RESPONSE MUST END. DO NOT CONTINUE.**
+   
+   - ❌ **Do NOT automatically check logs or status**
+   - ❌ **Do NOT call `get_run_logs()` or `get_run_video()` automatically**
+   - ❌ **Do NOT call `nen_status()` automatically**
+   - ❌ **Do NOT try to debug or fix anything automatically**
+   - ❌ **Do NOT wait a few seconds and then check status**
+   - ❌ **Do NOT poll for results**
+   - ❌ **Do NOT make any additional tool calls after opening the browser**
+   
+   **WHY?**
+   - The browser is now open with the `liveViewUrl`
+   - The user will watch the workflow execution in real-time
+   - The user will observe how the workflow behaves
+   - The user will return with feedback after the run completes
+   - Only the user can decide what worked, what failed, and what needs fixing
+
+5. **Wait for user to return:**
+   - User may ask for logs: **ONLY THEN** call `get_run_logs(messageId="...")`
+   - User may ask for video: **ONLY THEN** call `get_run_video(messageId="...")`
+   - User may report issues: **ONLY THEN** help debug and iterate (see Step 5)
+   - User may be satisfied: workflow creation is complete!
+
+## Step 5: Iterate Based on User Feedback
+
+After the user observes the workflow execution, iterate based on their feedback:
+
+1. **User returns with feedback:**
+   - User reports what they observed
+   - User describes what worked and what didn't
+   - User may request specific changes
+
+2. **🔍 CRITICAL: When to Check Logs**
+   
+   **ALWAYS call `get_run_logs()` when the user:**
+   - Reports the workflow failed or didn't work
+   - Describes what "should have happened" but didn't
+   - Says something like "it should have clicked..." or "it was supposed to..."
+   - Explains expected behavior that didn't occur
+   - Asks why something happened or didn't happen
+   - Mentions any unexpected behavior
+   - Wants to debug or troubleshoot the workflow
+   
+   **Why this is critical:**
+   - The logs show exactly what the workflow did
+   - The logs reveal where the workflow failed
+   - The logs contain VLM reasoning and decision-making
+   - The logs show validation results and extraction attempts
+   - **Without logs, you're guessing. With logs, you know.**
+   
+   **How to use logs:**
+   ```python
+   # ALWAYS get logs when user reports issues
+   get_run_logs(messageId="...")
+   
+   # Then analyze the logs to:
+   # - Find where the workflow failed
+   # - See what the VLM was "thinking"
+   # - Identify validation failures
+   # - Check extraction results
+   # - Understand unexpected behavior
+   ```
+
+3. **Debug based on log analysis:**
+   - Read the logs to understand what actually happened
+   - Compare logs to user's description of what should have happened
+   - Identify the specific step where behavior diverged
+   - Use log insights to fix the workflow code
+   - If needed, also get video: `get_run_video(messageId="...")`
+
+3. **Fix and re-deploy:**
+   - Make changes to workflow.py based on feedback
+   - **ALWAYS validate** after making changes: `nen_validate()`
+   - Deploy the updated workflow: `update_workflow()`
+   - Run again: `nen_run()`
+   - **Open browser automatically**: `Shell(f'open "{liveViewUrl}"')`
+   - **🛑 IMMEDIATELY STOP - End your response here and wait for user to observe again**
+
+4. **Repeat until satisfied:**
+   - Continue the iterate cycle: change → validate → deploy → run → **STOP** → observe
+   - User decides when the workflow meets their needs
+   - **Every iteration MUST end with STOP after `nen_run()`**
+
+## Example Full Flow
+
+```
+User: "Create a workflow to login to example.com"
+
+AI Actions:
+1. BUILD:
+   - Create workflows/my_workflows/example-login/workflow.py
+   - Author Python SDK code with agent(), validate(), etc.
+   - Check syntax with ReadLints
+
+2. VALIDATE:
+   - Read workflow file content
+   - Call nen_validate() to check workflow structure
+   - If validation fails: Fix issues and re-validate
+   - If validation passes: Proceed to deploy
+
+3. DEPLOY:
+   - Call nen_list_workflows() to get context
+   - Read workflow file content using Read tool
+   - Call nen_upload() with files parameter (content-based)
+   - Confirm workflowId received
+
+4. RUN:
+   - Call nen_run(workflowId="...", params={...})
+   - Share messageId and liveViewUrl with user
+   - Tell user: "The workflow is running! Watch it execute at the link above and let me know how it goes."
+   - **Open browser automatically**: Shell(f'open "{liveViewUrl}"')
+   - **🛑 STOP HERE - END RESPONSE IMMEDIATELY**
+   - **DO NOT check logs, status, or make any other tool calls after opening browser**
+
+5. ITERATE (when user returns with feedback):
+   - User: "It failed at the password field" or "It should have filled the password"
+   - AI: **IMMEDIATELY call get_run_logs()** to see what actually happened
+   - AI: Analyze logs, identify the issue, fix workflow, validate, deploy, run again
+   - **🛑 STOP AGAIN - END RESPONSE after nen_run()**
+   - Wait for user to observe the new run
+
+If validation fails (Step 2):
+   - Fix reported issues in workflow code
+   - Re-validate with nen_validate()
+   - Once validation passes, proceed to Step 3
+```
+
+## Validation After Changes
+
+**CRITICAL RULE: Always call `nen_validate()` after ANY modification to a workflow file.**
+
+When editing, updating, or fixing a workflow:
+
+1. **Make the changes** to workflow.py
+2. **Immediately validate:**
+   ```python
+   # Read the updated workflow file
+   workflow_content = Read("workflows/my_workflows/[workflow-name]/workflow.py")
+   
+   # Validate the changes
+   nen_validate(
+     content=workflow_content,
+     filename="workflow.py"
+   )
+   ```
+3. **Check validation results:**
+   - If validation passes: Proceed to deploy/run
+   - If validation fails: Fix issues and re-validate
+4. **Never deploy without validation** - this prevents runtime errors
+
+**When to validate:**
+- After creating a new workflow
+- After modifying existing workflow code
+- After fixing bugs or errors
+- Before every deployment
+- After making suggested changes
+
+## Common Pitfalls to Avoid
+
+### 1. Platform-Specific Keyboard Commands ❌
+
+**Problem:** Using macOS "command" key in workflows
+
+**Symptom:**
+```
+ERROR: xdotool key command failed: (symbol) No such key name 'command'
+WorkflowError: Keyboard hotkey failed
+```
+
+**Solution:** Always use "ctrl" instead of "command"
+
+```python
+# ❌ WRONG - crashes on Linux
+keyboard.hotkey("command", "a")
+
+# ✅ CORRECT - works in Linux containers
+keyboard.hotkey("ctrl", "a")
+```
+
+### 2. Not Clearing Input Fields ❌
+
+**Problem:** Fields contain pre-existing content that isn't cleared
+
+**Symptom:** Concatenated text like "oldvaluetest_email"
+
+**Solution:** Always select all + delete before typing
+
+```python
+# ❌ WRONG - doesn't clear field
+agent("Click email field")
+keyboard.type(input.email)
+
+# ✅ CORRECT - clears field first
+agent("Click email field")
+keyboard.hotkey("ctrl", "a")
+keyboard.press("BackSpace")
+keyboard.type(input.email)
+```
+
+### 3. Validation False Positives ❌
+
+**Problem:** Workflow reports success when it actually failed
+
+**Symptom:** VLM sees error messages but validation still passes
+
+**Solution:** Check failure indicators FIRST, be specific in questions
+
+```python
+# ❌ WRONG - checks success first (prone to false positives)
+if validate("Is there a dashboard?"):
+    return Output(success=True)
+elif validate("Are we still on login page?"):
+    return Output(success=False)
+
+# ✅ CORRECT - checks failure first (more reliable)
+if validate("Are we still on the login page?"):
+    return Output(success=False, error="Login failed")
+elif validate("Is there an error message visible?"):
+    return Output(success=False, error="Error displayed")
+elif validate("Is dashboard visible?"):
+    return Output(success=True)
+else:
+    return Output(success=False, error="Unable to determine state")
+```
+
+### 4. Vague Validation Questions ❌
+
+**Problem:** Generic questions lead to unreliable results
+
+**Solution:** Be specific about what to check
+
+```python
+# ❌ VAGUE - prone to misinterpretation
+validate("Is the page loaded?")
+validate("Did it work?")
+
+# ✅ SPECIFIC - clear and unambiguous
+validate("Is the email input field visible with a 'Send login link' button?")
+validate("Are we still on login.provetcloud.com URL?")
+validate("Is there an 'Invalid email' error message visible?")
+```
+
+### 5. Insufficient Timeouts ❌
+
+**Problem:** Operations take longer than default timeout (10s)
+
+**Solution:** Increase timeout for slow operations
+
+```python
+# ❌ WRONG - default timeout may be too short
+if not validate("Is dashboard loaded?"):
+    pass
+
+# ✅ CORRECT - increased timeout for slow pages
+if not validate("Is dashboard loaded?", timeout=30):
+    pass
+```
+
+## Important Notes
+
+### 🛑 MOST CRITICAL RULE 🛑
+**AFTER CALLING `nen_run()` AND OPENING THE BROWSER, YOUR RESPONSE MUST END IMMEDIATELY. NO EXCEPTIONS.**
+
+This is the #1 rule that must NEVER be violated:
+- ❌ Do NOT automatically call any debugging tools (`get_run_logs`, `get_run_video`, `nen_status`)
+- ❌ Do NOT automatically check workflow status or results
+- ❌ Do NOT wait a few seconds and then check status
+- ❌ Do NOT make any additional tool calls after opening the browser
+- ❌ Do NOT try to be helpful by automatically debugging
+- ✅ DO call `nen_run()` to start the workflow
+- ✅ DO automatically open the browser with the `liveViewUrl` using Shell tool
+- ✅ DO end your response immediately after opening the browser
+- ✅ DO wait for user to return with feedback
+- ✅ DO only help with debugging when user explicitly asks
+
+### Other Important Rules
+
+- **Complete steps 1-5, then STOP** - after calling `nen_run()` and opening the browser, wait for user to observe and return with feedback
+- **MANDATORY: Call `nen_validate()` after EVERY workflow file change** - this is non-negotiable
+- **Never skip validation** - always run `nen_validate()` before deploying workflows
+- **Don't skip deployment** - workflows must be deployed to run on NenAI platform
+- **STOP after running** - this applies to EVERY `nen_run()` call, including re-runs during iteration
+- **Be proactive through Step 4** - proceed through Build → Validate → Deploy → Run without asking permission
+- **Wait patiently at Step 4** - let user observe the workflow and come back with feedback
+- **Handle failures gracefully** - if validation or deployment fails, debug and retry; if run fails, wait for user feedback
+- **CRITICAL: Never use localPath in nen_upload()** - Always use content-based upload with the `files` parameter because MCP tools run in a containerized environment and cannot access local filesystem paths
+
+## Quick Reference
+
+| Step | Action | Tool | After Tool Call |
+|------|--------|------|-----------------|
+| 1. Build | Create workflow.py | `Write`, `StrReplace` | Continue |
+| 1a. Lint | Check syntax | `ReadLints` | Continue |
+| 2. Validate | Validate workflow structure | `nen_validate` | Continue if valid |
+| 3. Deploy | Upload to platform | `nen_upload` or `update_workflow` | Continue |
+| 4. Run | Execute workflow | `nen_run` | Continue |
+| 4a. Open Browser | Open live view URL | `Shell` with `open` command | **🛑 STOP IMMEDIATELY** |
+| 5. Iterate | Fix based on user feedback | Back to Step 1 or 2 | Depends on step |
+| 5a. Debug | **Get logs when user reports issues** | `get_run_logs` | Continue |
+| (Optional) | Get video if visual debugging needed | `get_run_video` | Continue |
+| (Optional) | Get artifacts **when user asks** | `nen_artifacts` | Continue |
+
+**⚠️ REMEMBER: After `nen_run()` and opening the browser, your response MUST end immediately. The browser will automatically open and the user will observe the workflow execution and return with feedback.**

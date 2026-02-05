@@ -56,7 +56,7 @@ Ask the AI agent in Cursor:
 Show me the available NenAI Platform MCP tools
 ```
 
-✅ You should see tools like nen_create_workflow, nen_run, nen_status, update_workflow, get_run_video, and get_run_logs!
+✅ You should see tools like nen_create_workflow, nen_validate, nen_run, nen_status, update_workflow, get_run_video, and get_run_logs!
 
 ---
 
@@ -70,7 +70,23 @@ Ask your AI agent to create a workflow:
 Create a workflow that navigates to google.com and takes a screenshot
 ```
 
-The AI will use `nen_create_workflow` to generate FSM files in `workflows/my_workflows/`, then upload and run them using the available MCP tools.
+The AI will create a workflow, validate it using `nen_validate`, then upload and run it using the available MCP tools.
+
+### Validating Workflows
+
+Before deploying any workflow, validate its structure:
+
+```
+Validate my workflow in workflows/my_workflows/example/workflow.py
+```
+
+The AI will use `nen_validate` to check:
+- Pydantic Input/Output models
+- Correct function signature (`run(input: Input) -> Output`)
+- Required imports and type hints
+- Proper error handling
+
+**Best Practice:** Always validate workflows before deployment to catch errors early!
 
 ---
 
@@ -100,9 +116,10 @@ Remote MCP tools are updated server-side automatically.
 
 ## Documentation
 
+- [WORKFLOW_VALIDATION_GUIDE.md](WORKFLOW_VALIDATION_GUIDE.md) - Workflow validation guide
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Detailed troubleshooting guide
 - [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) - Complete MCP tools reference
-- [.cursorrules](.cursorrules) - FSM workflow authoring guide
+- [.cursor/rules/](.cursor/rules/) - Workflow authoring guides and rules
 - [workflows/samples/](workflows/samples/) - Example workflows
 
 ---

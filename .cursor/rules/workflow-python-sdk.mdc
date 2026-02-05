@@ -1,368 +1,395 @@
 ---
-description: "Python SDK guidance for NenAI workflow.py files"
-globs: ["workflows/**/*.py"]
+description: "NenAI Python SDK reference for workflow authoring - execution environment, keyboard/mouse control, and common patterns"
 alwaysApply: false
 ---
 
-# Python SDK Guidance for NenAI Workflows
+# NenAI Python SDK - Execution Environment & Best Practices
 
-This guide provides Python-specific patterns and best practices for authoring `workflow.py` files.
+## Execution Environment
 
-## Handler Function Pattern
+**CRITICAL:** Workflows run in **Linux containers** with the following characteristics:
+
+- **OS:** Linux (Ubuntu-based)
+- **Keyboard/Mouse:** xdotool (Linux tool for input control)
+- **Browser:** Firefox
+- **Display:** Headless X11 with VNC recording
+
+### Platform Compatibility
+
+**Always use Linux/Windows keyboard modifiers, NOT macOS:**
 
 ```python
-def handler(payload: dict) -> dict:
-    """
-    Main workflow entry point.
-    
-    Args:
-        payload: Input parameters passed when the workflow is executed.
-                 Access variables like: payload.get("VAR_NAME", "default")
-    
-    Returns:
-        dict: Results to return from workflow execution.
-              Should include at minimum: {"success": bool}
-    """
-    # Implementation
+# ❌ WRONG - macOS only (will crash with xdotool error)
+keyboard.hotkey("command", "a")
+keyboard.hotkey("command", "c")
+
+# ✅ CORRECT - Linux/Windows (works in workflow container)
+keyboard.hotkey("ctrl", "a")
+keyboard.hotkey("ctrl", "c")
 ```
 
-## Payload Access Patterns
+**Common key mappings:**
+- Select All: `keyboard.hotkey("ctrl", "a")` (not "command")
+- Copy: `keyboard.hotkey("ctrl", "c")` (not "command")
+- Paste: `keyboard.hotkey("ctrl", "v")` (not "command")
+- Cut: `keyboard.hotkey("ctrl", "x")` (not "command")
+- Save: `keyboard.hotkey("ctrl", "s")` (not "command")
 
-### Optional Variables with Defaults
+### xdotool Key Names
+
+Valid key names for `keyboard.press()` and `keyboard.hotkey()`:
+
+**Modifier keys:**
+- `ctrl` - Control key (Linux/Windows)
+- `shift` - Shift key
+- `alt` - Alt key (Option on Mac)
+- `super` - Windows/Super key (Command on Mac)
+
+**Special keys:**
+- `Return` or `Enter` - Enter/Return key
+- `BackSpace` - Backspace key
+- `Delete` - Delete key
+- `Tab` - Tab key
+- `Escape` - Escape key
+- `space` - Space bar
+
+**Navigation keys:**
+- `Up`, `Down`, `Left`, `Right` - Arrow keys
+- `Home`, `End` - Home/End keys
+- `Page_Up`, `Page_Down` - Page up/down
+
+**Function keys:**
+- `F1`, `F2`, ..., `F12` - Function keys
+
+## Common Patterns
+
+### Clearing Input Fields
+
+Always clear fields before typing new content:
+
 ```python
-def handler(payload: dict) -> dict:
-    # Optional with default value
-    url = payload.get("WEBSITE_URL", "https://default.com")
-    timeout = payload.get("TIMEOUT", 30)
-    max_retries = payload.get("MAX_RETRIES", 3)
+from nen.workflow import agent, keyboard
+
+# Method 1: Select all + delete
+agent("Click on the email field")
+keyboard.hotkey("ctrl", "a")  # Select all text
+keyboard.press("BackSpace")    # Delete selected text
+keyboard.type(input.email)     # Type new content
+
+# Method 2: Triple-click to select all + delete
+agent("Triple-click the text field to select all")
+keyboard.press("BackSpace")
+keyboard.type(input.value)
+
+# Method 3: For known content length, use multiple backspaces
+agent("Click at the end of the text field")
+for _ in range(50):  # Exceed expected length
+    keyboard.press("BackSpace")
+keyboard.type(input.text)
 ```
 
-### Required Variables
+**Why clearing is important:**
+- Fields may have default/pre-filled values
+- Previous workflow runs may leave data
+- Concatenation errors occur if you don't clear first
+
+### Validation Strategies
+
+**Check failure indicators BEFORE success indicators:**
+
 ```python
-def handler(payload: dict) -> dict:
-    # Required (raises KeyError if missing)
-    patient_name = payload["PATIENT_NAME"]
-    
-    # Better: Validate and return error
-    if "PATIENT_NAME" not in payload:
-        return {"success": False, "error": "PATIENT_NAME is required"}
-    
-    patient_name = payload["PATIENT_NAME"]
+from nen.workflow import validate
+
+# ❌ BAD - checks success first (prone to false positives)
+if validate("Is there a dashboard?"):
+    return Output(success=True)
+elif validate("Are we still on login page?"):
+    return Output(success=False, error="Still on login page")
+
+# ✅ GOOD - checks failure first (more reliable)
+if validate("Are we still on the login page?"):
+    return Output(success=False, error="Login failed")
+elif validate("Is there an error message visible?"):
+    return Output(success=False, error="Error displayed")
+elif validate("Did we navigate to a dashboard or different URL?"):
+    return Output(success=True, message="Login successful")
+else:
+    return Output(success=False, error="Unable to determine state")
 ```
 
-### Type Checking
+**Be specific in validation questions:**
+
 ```python
-def handler(payload: dict) -> dict:
-    patient_name = payload.get("PATIENT_NAME")
-    
-    # Validate type
-    if not isinstance(patient_name, str):
-        return {"success": False, "error": "PATIENT_NAME must be a string"}
-    
-    # Validate not empty
-    if not patient_name or not patient_name.strip():
-        return {"success": False, "error": "PATIENT_NAME cannot be empty"}
+# ❌ VAGUE - prone to misinterpretation
+validate("Is the page loaded?")
+validate("Did it work?")
+
+# ✅ SPECIFIC - clear and unambiguous
+validate("Is the email input field visible with a 'Send login link' button?")
+validate("Are we still on login.provetcloud.com URL?")
+validate("Is there an 'Invalid email' error message visible?")
 ```
 
-## Return Structure Patterns
+**Always default to failure when state is unclear:**
 
-### Success Response
 ```python
-return {
-    "success": True,
-    "data": extracted_data,
-    "message": "Workflow completed successfully",
-    "metadata": {
-        "records_processed": 10,
-        "execution_time": 45.2
-    }
-}
+# Conservative approach - if we can't confirm success, assume failure
+if validate("Success indicator 1"):
+    return Output(success=True)
+elif validate("Success indicator 2"):
+    return Output(success=True)
+else:
+    # Default to failure (conservative)
+    return Output(success=False, error="Unable to verify success")
 ```
 
-### Failure Response
+### Keyboard Typing with Delays
+
+For sensitive fields (passwords, forms with validation), add delays:
+
 ```python
-return {
-    "success": False,
-    "error": "Specific error message",
-    "details": {
-        "step": "authentication",
-        "reason": "Invalid credentials",
-        "attempted_username": username
-    }
-}
+from nen.workflow import keyboard
+
+# Standard typing (fast)
+keyboard.type("username@example.com")
+
+# Slower typing for better reliability (10ms between chars)
+keyboard.type("password123", interval=0.01)
+
+# Very slow for temperamental forms (50ms between chars)
+keyboard.type("sensitive-data", interval=0.05)
 ```
 
-## Error Handling Patterns
+### Mouse Coordinates
 
-### Using try/except with WorkflowError
+Direct mouse control when VLM-based agent() is unreliable:
+
 ```python
-from nen.workflow import agent, WorkflowError
-import logging
+from nen.workflow import mouse, validate
 
-def handler(payload: dict) -> dict:
-    try:
-        agent("Click submit button")
-    except WorkflowError as e:
-        logging.error("Agent action failed", extra={
-            "error": str(e),
-            "action": "click submit"
-        })
-        return {"success": False, "error": f"Failed to click submit: {e}"}
+# Wait for element to be visible first
+if not validate("Is the submit button visible?"):
+    return Output(success=False, error="Button not found")
+
+# Click at specific coordinates
+mouse.click_at(500, 400)
+
+# Move and click
+mouse.move(300, 200)
+mouse.click()
 ```
 
-### Graceful Degradation
-```python
-def handler(payload: dict) -> dict:
-    # Try primary method
-    if not login_with_sso(payload):
-        logging.warning("SSO login failed, trying password login")
-        # Fallback to alternative method
-        if not login_with_password(payload):
-            return {"success": False, "error": "All login methods failed"}
-    
-    # Continue workflow
-    return {"success": True}
+**When to use direct mouse control:**
+- Small clickable areas
+- Elements without clear text labels
+- Repeated clicks in same location
+- Drawing or dragging operations
+
+## Common Pitfalls
+
+### 1. Platform-Specific Keyboard Commands
+
+**Problem:** Using macOS "command" key in workflows
+
+**Symptom:**
+```
+ERROR: xdotool key command failed: (symbol) No such key name 'command'
+WorkflowError: Keyboard hotkey failed
 ```
 
-### Validation Chain
+**Solution:** Always use "ctrl" instead of "command"
+
+### 2. Not Clearing Input Fields
+
+**Problem:** Fields contain pre-existing content
+
+**Symptom:** Concatenated text like "oldvaluetest_email"
+
+**Solution:** Always select all + delete before typing
+
+### 3. Validation False Positives
+
+**Problem:** Workflow reports success when it actually failed
+
+**Symptom:** VLM sees error messages but validation still passes
+
+**Solution:** Check failure indicators first, be specific in questions
+
+### 4. Timeout Issues
+
+**Problem:** Operations take longer than expected
+
+**Symptom:** Validation returns false before element appears
+
+**Solution:** Increase timeout for slow operations:
+
 ```python
-def handler(payload: dict) -> dict:
-    # Step 1: Validate
-    agent("Open Firefox")
-    if not validate("Is Firefox open?", timeout=10):
-        return {"success": False, "error": "Failed to open browser"}
-    
-    # Step 2: Navigate
-    agent(f"Navigate to {url}")
-    if not validate("Is page loaded?", timeout=20):
-        return {"success": False, "error": "Failed to load page"}
-    
-    # Step 3: Interact
-    agent("Click submit")
-    if not validate("Is confirmation visible?", timeout=15):
-        return {"success": False, "error": "Submission failed"}
-    
-    return {"success": True}
+# Default timeout (10 seconds)
+if not validate("Is page loaded?"):
+    pass
+
+# Increased timeout for slow pages (30 seconds)
+if not validate("Is dashboard visible?", timeout=30):
+    pass
+
+# Custom timeouts for agent operations
+agent("Fill out the form", max_iterations=20)  # More time/retries
 ```
 
-## Logging Best Practices
+### 5. Browser State Assumptions
 
-### Structured Logging
+**Problem:** Assuming clean browser state
+
+**Symptom:** Unexpected cached data, cookies, or logged-in sessions
+
+**Solution:** Always start fresh, check actual state:
+
 ```python
-import logging
+# Don't assume logged out
+agent("Open Firefox and navigate to https://example.com")
 
-def handler(payload: dict) -> dict:
-    # Use extra dict for structured data
-    logging.info("Step 1: Authenticating", extra={
-        "username": payload.get("USERNAME"),
-        "step": "authentication"
-    })
-    
-    # Log checkpoints
-    logging.info("Checkpoint: Login form visible")
-    
-    # Log data for debugging
-    result = extract("Get data", schema=schema)
-    logging.info("Extraction result", extra={
-        "result_type": type(result).__name__,
-        "result_keys": list(result.keys()) if isinstance(result, dict) else None,
-        "result": result
-    })
+# Check actual state first
+if validate("Are we already logged in (dashboard visible)?"):
+    return Output(success=True, message="Already logged in")
+
+# Then proceed with login if needed
+agent("Click login button")
+# ...
 ```
 
-### Redact Sensitive Data
-```python
-import logging
+## Debugging Tips
 
-def handler(payload: dict) -> dict:
-    username = payload.get("USERNAME")
-    password = payload.get("PASSWORD")
-    
-    # Good: Log username but redact password
-    logging.info("Authenticating", extra={
-        "username": username,
-        "password": "***REDACTED***"
-    })
-    
-    # Bad: Never log passwords in plain text
-    # logging.info(f"Password: {password}")  # ❌ NEVER DO THIS
+### Reading VLM Logs
+
+When logs show VLM reasoning, look for:
+
+1. **What the VLM saw:**
+   ```
+   "screenshot shows the login page at login.provetcloud.com with email field 
+    containing 'test_email' (marked as invalid)"
+   ```
+
+2. **What action was planned:**
+   ```
+   "I will click on the email input field"
+   ```
+
+3. **Validation results:**
+   ```
+   validate("Are we still on login page?")
+   Result: is_valid=true
+   Match reason: "The page shows login form with logo..."
+   ```
+
+4. **Error messages:**
+   ```
+   ERROR: xdotool key command failed
+   WorkflowError: Keyboard hotkey failed
+   ```
+
+### Common Error Patterns
+
+**xdotool errors** → Platform-specific commands (use Linux conventions)
+
+**WorkflowError: Validation timeout** → Increase timeout or check if element exists
+
+**False validation success** → Make questions more specific, check failure first
+
+**Concatenated text in fields** → Clear field before typing
+
+## SDK Function Reference (Quick)
+
+### agent(description, max_iterations=10)
+Natural language action using vision language model.
+
+```python
+agent("Click the blue submit button")
+agent("Fill in the entire registration form", max_iterations=20)
+agent("Navigate to the settings page")
 ```
 
-### Log Levels
-```python
-import logging
+### validate(question, timeout=10)
+Check UI state with yes/no question. Returns bool.
 
-def handler(payload: dict) -> dict:
-    # INFO: Normal workflow progress
-    logging.info("Starting workflow", extra={"step": "initialization"})
-    
-    # WARNING: Recoverable issues
-    logging.warning("Retrying operation", extra={"attempt": 2, "max_attempts": 3})
-    
-    # ERROR: Failures that stop workflow
-    logging.error("Failed to authenticate", extra={"error": error_message})
-    
-    # DEBUG: Detailed debugging info (rarely needed)
-    logging.debug("Internal state", extra={"state": internal_state})
+```python
+if validate("Is the login form visible?"):
+    # Proceed with login
+    pass
+
+if not validate("Is dashboard loaded?", timeout=30):
+    return Output(success=False, error="Dashboard didn't load")
 ```
 
-## Function Organization Patterns
+### extract(query, schema)
+Extract structured data using JSON schema. Returns dict/list.
 
-### Helper Functions
 ```python
-from nen.workflow import agent, validate, keyboard
-
-def handler(payload: dict) -> dict:
-    """Main entry point."""
-    if not login(payload):
-        return {"success": False, "error": "Login failed"}
-    
-    data = extract_patient_data(payload["PATIENT_NAME"])
-    return {"success": True, "data": data}
-
-
-def login(payload: dict) -> bool:
-    """Authenticate to the system. Returns True on success."""
-    agent("Navigate to login page")
-    if not validate("Is login form visible?"):
-        return False
-    
-    agent(f"Enter username '{payload.get('USERNAME')}'")
-    agent("Enter password")
-    keyboard.type(payload.get("PASSWORD"), interval=0.01)
-    agent("Click login button")
-    
-    return validate("Is dashboard visible?", timeout=15)
-
-
-def extract_patient_data(patient_name: str) -> dict:
-    """Extract patient data from current view."""
-    schema = {
+data = extract(
+    "What is the account balance?",
+    schema={
         "type": "object",
         "properties": {
-            "name": {"type": "string"},
-            "mrn": {"type": "string"}
-        }
+            "balance": {"type": "number"},
+            "currency": {"type": "string"}
+        },
+        "required": ["balance"]
     }
-    return extract(f"Get data for patient {patient_name}", schema=schema)
+)
+# Returns: {"balance": 1250.50, "currency": "USD"}
 ```
 
-### Multi-Phase Workflows
+### keyboard.type(text, interval=0.0)
+Type text with optional delay between characters.
+
 ```python
-def handler(payload: dict) -> dict:
-    """Structured multi-phase workflow."""
-    # Phase 1: Validation
-    if not validate_inputs(payload):
-        return {"success": False, "error": "Invalid inputs"}
-    
-    # Phase 2: Authentication
-    if not authenticate(payload):
-        return {"success": False, "error": "Authentication failed"}
-    
-    # Phase 3: Main logic
-    result = execute_main_workflow(payload)
-    if not result["success"]:
-        return result
-    
-    # Phase 4: Return results
-    return {"success": True, "data": result["data"]}
-
-
-def validate_inputs(payload: dict) -> bool:
-    """Validate required payload fields."""
-    required_fields = ["USERNAME", "PASSWORD", "PATIENT_NAME"]
-    return all(field in payload for field in required_fields)
-
-
-def authenticate(payload: dict) -> bool:
-    """Handle authentication."""
-    # Implementation
-    pass
-
-
-def execute_main_workflow(payload: dict) -> dict:
-    """Execute main workflow logic."""
-    # Implementation
-    pass
+keyboard.type("username@example.com")
+keyboard.type("password", interval=0.01)  # 10ms delay per char
 ```
 
-## Variable Naming Conventions
+### keyboard.press(key)
+Press a single key.
 
-### Good Names
 ```python
-# Descriptive and specific
-patient_name = payload.get("PATIENT_NAME")
-appointment_date = payload.get("APPOINTMENT_DATE")
-max_retry_attempts = payload.get("MAX_RETRIES", 3)
-
-# Boolean flags - use is/has/should prefix
-is_verbose = payload.get("VERBOSE", False)
-has_attachments = payload.get("INCLUDE_ATTACHMENTS", True)
-should_verify = payload.get("VERIFY_DATA", True)
-
-# Collections - use plural names
-patient_names = extract("Get all patient names", schema=schema)
-error_messages = []
-downloaded_files = []
+keyboard.press("Return")
+keyboard.press("BackSpace")
+keyboard.press("Tab")
 ```
 
-### Avoid
+### keyboard.hotkey(*keys)
+Press multiple keys simultaneously (modifier combos).
+
 ```python
-# Too short or cryptic
-pn = payload.get("PATIENT_NAME")  # ❌
-d = payload.get("DATE")  # ❌
-x = extract("data", schema=schema)  # ❌
-
-# Unclear or misleading
-data = payload.get("PATIENT_NAME")  # ❌ (data is too generic)
-temp = validate("Is loaded?")  # ❌ (temp suggests temporary, not boolean)
+keyboard.hotkey("ctrl", "a")    # Select all
+keyboard.hotkey("ctrl", "c")    # Copy
+keyboard.hotkey("ctrl", "v")    # Paste
+keyboard.hotkey("shift", "Tab") # Reverse tab
 ```
 
-## Common Pitfalls to Avoid
+### mouse.click()
+Click at current mouse position.
 
-### Don't Repeat agent() Descriptions
 ```python
-# Bad: Repetitive and vague
-agent("Click button")
-agent("Click button")
-agent("Click button")
-
-# Good: Specific and distinct
-agent("Click the blue 'Submit' button in the bottom right")
-agent("Click 'Yes' on the confirmation dialog")
-agent("Click the 'Download Report' link in the table")
+mouse.click()
 ```
 
-### Don't Skip Validation
+### mouse.click_at(x, y)
+Click at specific coordinates.
+
 ```python
-# Bad: No validation after critical actions
-agent("Click login")
-agent("Navigate to patients")  # Might fail if login failed!
-
-# Good: Validate after each critical step
-agent("Click login")
-if not validate("Is dashboard visible?", timeout=15):
-    return {"success": False, "error": "Login failed"}
-
-agent("Navigate to patients")
-if not validate("Is patients table visible?", timeout=10):
-    return {"success": False, "error": "Navigation failed"}
+mouse.click_at(500, 300)
 ```
 
-### Don't Ignore Return Values
+### mouse.move(x, y)
+Move mouse to coordinates.
+
 ```python
-# Bad: Ignoring validation results
-validate("Is data visible?")
-data = extract("Get data", schema=schema)  # Might extract wrong data!
-
-# Good: Check validation before proceeding
-if not validate("Is data visible?"):
-    return {"success": False, "error": "Data not found"}
-
-data = extract("Get data", schema=schema)
+mouse.move(400, 200)
+mouse.click()  # Then click
 ```
 
-## For More Details
+## For Complete Details
 
-- **@workflow-guide-comprehensive** - Architecture, execution environment, advanced patterns
-- **@workflow-reference-detailed** - Complete SDK reference with all function signatures
+- **@workflow-guide-comprehensive** - Architecture, advanced patterns, debugging
+- **@workflow-reference-detailed** - Complete SDK reference with all parameters
+- **@workflow-core** - Quick start template and basic patterns
+- **@mcp-platform-tools** - MCP tools for deployment, execution, debugging

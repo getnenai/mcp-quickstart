@@ -7,6 +7,19 @@ alwaysApply: true
 
 You are an AI assistant helping to author NenAI computer use workflows using the **Python SDK** approach.
 
+## ⚠️ CRITICAL: Execution Environment
+
+**Workflows run in Linux containers**, NOT on your local machine. This means:
+
+- **Use Linux keyboard commands:** `keyboard.hotkey("ctrl", "a")` ❌ NOT `"command"`
+- **xdotool is the keyboard/mouse tool:** Linux key names only (ctrl, shift, alt, super)
+- **Browser:** Firefox (headless with VNC recording)
+- **OS:** Ubuntu-based Linux container
+
+**Common mistake:** Using macOS "command" key crashes with `"No such key name 'command'"` error.
+
+For detailed platform compatibility, see **@workflow-python-sdk**.
+
 ## Workflow Structure
 
 Python-based workflows use the `nen.workflow` SDK.
@@ -25,30 +38,55 @@ Workflow: [Name]
 Description of what this workflow does.
 """
 from nen.workflow import agent, validate, extract, keyboard, mouse
+from pydantic import BaseModel, Field
 
 
-def handler(payload: dict) -> dict:
+class Input(BaseModel):
+    """Input parameters for this workflow."""
+    
+    website_url: str = Field(default="https://example.com", min_length=1)
+
+
+class Output(BaseModel):
+    """Output returned by this workflow."""
+    
+    success: bool
+    error: str | None = None
+
+
+def run(input: Input) -> Output:
     """
     Main workflow entry point.
     
     Args:
-        payload: Input parameters
+        input: Pydantic model with workflow input parameters
     
     Returns:
-        dict with at minimum: {"success": bool}
+        Output model with workflow results
     """
-    # Get inputs
-    url = payload.get("WEBSITE_URL", "https://example.com")
-    
     # Workflow logic
-    agent(f"Open Firefox and navigate to {url}")
+    agent(f"Open Firefox and navigate to {input.website_url}")
     
     if not validate("Is the website loaded?"):
-        return {"success": False, "error": "Failed to load website"}
+        return Output(success=False, error="Failed to load website")
     
     # Return results
-    return {"success": True}
+    return Output(success=True)
 ```
+
+## CRITICAL: Validation Rule
+
+**After ANY change to workflow.py, you MUST call `nen_validate()`:**
+
+```python
+# Read the workflow file
+workflow_content = Read("workflows/my_workflows/[workflow-name]/workflow.py")
+
+# Validate it
+nen_validate(content=workflow_content, filename="workflow.py")
+```
+
+This catches errors before deployment and ensures the workflow will execute correctly.
 
 ## SDK Primitives Quick Reference
 
@@ -90,13 +128,15 @@ mouse.move(400, 200)
 ```
 
 ### keyboard
-Direct keyboard control (no VLM).
+Direct keyboard control (no VLM). **Use Linux key names only.**
 ```python
 from nen.workflow import keyboard
 
 keyboard.type("hello@example.com")
 keyboard.press("Return")
+keyboard.hotkey("ctrl", "a")  # Select all (Linux: ctrl, NOT command)
 keyboard.hotkey("ctrl", "c")  # Copy
+keyboard.press("BackSpace")   # Delete
 ```
 
 ## Common Patterns
@@ -105,35 +145,48 @@ keyboard.hotkey("ctrl", "c")  # Copy
 ```python
 agent("Open Firefox")
 if not validate("Is Firefox open?", timeout=10):
-    return {"success": False, "error": "Failed to open browser"}
+    return Output(success=False, error="Failed to open browser")
 
-agent(f"Navigate to {url}")
+agent(f"Navigate to {input.url}")
 if not validate("Is page loaded?", timeout=20):
-    return {"success": False, "error": "Failed to load page"}
+    return Output(success=False, error="Failed to load page")
 ```
 
 ### Login Workflow
 ```python
 agent("Navigate to login page")
 if not validate("Is login form visible?"):
-    return {"success": False, "error": "Login page not found"}
+    return Output(success=False, error="Login page not found")
 
+# Fill username field - clear existing content first
 agent("Click username field")
-keyboard.type(username)
+keyboard.hotkey("ctrl", "a")  # Select all (Linux-compatible)
+keyboard.press("BackSpace")   # Clear field
+keyboard.type(input.username)
 
+# Fill password field - clear existing content first
 agent("Click password field")
-keyboard.type(password, interval=0.01)
+keyboard.hotkey("ctrl", "a")  # Select all
+keyboard.press("BackSpace")   # Clear field
+keyboard.type(input.password, interval=0.01)
 
 agent("Click login button")
 
-if validate("Is dashboard visible?", timeout=20):
-    return {"success": True}
+# Check failure indicators FIRST (more reliable)
+if validate("Are we still on the login page?", timeout=10):
+    return Output(success=False, error="Login failed - still on login page")
+elif validate("Is there an error message visible?"):
+    return Output(success=False, error="Login failed - error message displayed")
+elif validate("Is dashboard visible?", timeout=20):
+    return Output(success=True, message="Login successful")
+else:
+    return Output(success=False, error="Unable to verify login state")
 ```
 
 ### Data Extraction
 ```python
 if not validate("Is the data table visible?"):
-    return {"success": False, "error": "Table not found"}
+    return Output(success=False, error="Table not found")
 
 data = extract(
     "Extract all rows from the table",
@@ -149,20 +202,34 @@ data = extract(
     }
 )
 
-return {"success": True, "data": data}
+return Output(success=True, data=data)
 ```
 
 ## Best Practices
 
-1. **Be specific in agent() descriptions** - "Click the blue 'Submit' button in the bottom right" not "Click submit"
+1. **Use Pydantic models** - Define `Input` and `Output` classes with type hints and validation
 
-2. **Validate before extracting** - Always check UI state before data extraction
+2. **Validate before deploying** - Always run `nen_validate()` tool before publishing workflows
 
-3. **Return structured results** - Include `{"success": bool}` at minimum
+3. **Use Linux keyboard commands** - Always use `"ctrl"` not `"command"` (workflows run in Linux containers)
 
-4. **Use sensible defaults** - `payload.get("VAR", "default")` for optional parameters
+4. **Clear fields before typing** - Always select all (`ctrl+a`) + delete before typing into input fields
 
-5. **Don't log sensitive data** - Redact passwords, tokens, and credentials
+5. **Check failure BEFORE success** - In validation logic, check for error indicators first, then success indicators
+
+6. **Be specific in validations** - "Is there an 'Invalid email' error?" not "Did it work?"
+
+7. **Be specific in agent() descriptions** - "Click the blue 'Submit' button in the bottom right" not "Click submit"
+
+8. **Validate before extracting** - Always check UI state before data extraction
+
+9. **Return structured Output** - Use Pydantic `Output` model, include `success: bool` field
+
+10. **Use Field validation** - `Field(default="...", min_length=1, ge=0)` for input validation
+
+11. **Don't log sensitive data** - Redact passwords, tokens, and credentials
+
+12. **Default to failure when unclear** - If state is ambiguous, return `Output(success=False, error="...")`
 
 ## For More Details
 
